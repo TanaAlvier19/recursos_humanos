@@ -113,7 +113,7 @@ function calculateDays(start: string, end: string): number {
         </div>
         <div>
           <label>Justificativa (PDF)</label>
-          <Input type="file" accept="application/pdf" onChange={handleFileChange} />
+          <Input type="file" required accept="application/pdf" onChange={handleFileChange} />
         </div>
         <Button type="submit">Enviar Pedido</Button>
       </form>
