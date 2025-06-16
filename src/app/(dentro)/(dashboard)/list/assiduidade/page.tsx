@@ -175,6 +175,12 @@ export default function FormModalAssiduidade() {
         if (registrandoSaida) {
           await registrarSaida(dados.funcionario_id, hora);
         } else {
+          const jaExisteEntrada = listaAssiduidade.some(item => item.funcionario === dados.funcionario_id && item.data === dataAtual && item.saida === null);
+          if (jaExisteEntrada) {
+            definirErro('Entrada já registrada para hoje');
+            fecharCamera();
+            return;
+          }
           definirDadosFormulario({ funcionario: dados.funcionario_id.toString(), entrada: hora, data: dataAtual });
         }
 
