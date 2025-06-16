@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React, { useContext, useState  } from 'react';
 import { AuthContext } from '@/app/context/AuthContext';
-import { Home } from "lucide-react";
+import { Menu } from "lucide-react";
 type Props = {
   clicadoMenu: () => void;
 };
@@ -27,7 +27,7 @@ export default function Navbar ({clicadoMenu}: Props) {
           title="Abrir menu"
           aria-label="Abrir menu"
         >
-          <Home className="w-5 h-5 mr-2" />
+          <Menu className="w-5 h-5 mr-2" />
           <span className="sr-only">Abrir menu</span>
         </button>
         <Link href="/" className="flex items-center gap-2">
