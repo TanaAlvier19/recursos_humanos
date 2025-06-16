@@ -3,6 +3,12 @@
 import { useEffect, useState, useRef , useContext} from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import {
+  FileText,
+  LogIn,
+  LogOut,
+  UserPlus
+} from 'lucide-react'
 import { AuthContext } from '@/app/context/AuthContext';
 interface Assiduidade {
   id: number;
@@ -179,7 +185,7 @@ export default function FormModalAssiduidade() {
     }
 
     try {
-      const response = await fetch('https://8d3e-102-214-36-231.ngrok-free.app/api/facial/', {
+      const response = await fetch('http://localhost:8000/api/facial/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: imageData }),
@@ -262,43 +268,85 @@ export default function FormModalAssiduidade() {
   }, []);
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-800">Gestão de Assiduidade</h1>
+    <div className="mx-auto max-w-5xl p-6 space-y-6">
+      
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+          Gestão de Assiduidade
+        </h1>
         <button
           onClick={exportToPDF}
-          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow"
+          className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow
+                     transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300 min-h-[48px]"
         >
+          <FileText className="w-5 h-5" />
           Exportar PDF
         </button>
-      </div>
+      </header>
 
-      <div className="flex space-x-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <button
           onClick={() => setOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow"
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white
+                     px-4 py-2 rounded shadow min-h-[48px] transition-colors duration-200
+                     focus:outline-none focus:ring-2 focus:ring-blue-300 w-full sm:w-auto"
         >
+          <LogIn className="w-5 h-5" />
           Registrar Entrada
         </button>
-        
+
         <button
           onClick={openCameraSaida}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow"
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white
+                     px-4 py-2 rounded shadow min-h-[48px] transition-colors duration-200
+                     focus:outline-none focus:ring-2 focus:ring- w-full sm:w-auto"
         >
+          <LogOut className="w-5 h-5" />
           Registrar Saída
         </button>
-        
-        <button
-          onClick={() => {
-            setIsRegisteringFace(true);
-            openCamera();
-          }}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded shadow"
-        >
-          Cadastrar Novo Rosto
-        </button>
-      </div>
 
+        
+
+      
+      
+     
+    </div>
+     <div className="overflow-auto sm:w-full bg-white rounded shadow">
+        <table className="min-w-full divide-y divide-gray-200 text-sm">
+          <thead className="bg-gray-50 px-10">
+            <tr className=''>
+              <th className="px-6 text-left whitespace-nowrappy-2">Funcionário</th>
+              <th className="px-1 text-left whitespace-nowrap py-2">Entrada</th>
+              <th className="px-9 text-left whitespace-nowrap py-2">Saída</th>
+              <th className="px-4  text-left whitespace-nowrap py-2">Data</th>
+              <th className="px-4  text-left whitespace-nowrappy-2">Duração</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100 ">
+            {assiduidadeList.map((item) => (
+              <tr key={item.id} className="hover:bg-gray-50 mx-24">
+                <td className="px-10 whitespace-nowrap py-2">{item.funcionario_nome}</td>
+                <td className="px-15  whitespace-nowrap py-2">{item.entrada}</td>
+                <td className="px-10  whitespace-nowrap py-2">
+                  {editingId === item.id ? (
+                    <input
+                      type="time"
+                      className="border px-2 py-1 rounded"
+                      value={editedSaida}
+                      onChange={(e) => setEditedSaida(e.target.value)}
+                    />
+                  ) : (
+                    item.saida || '-'
+                  )}
+                </td>
+                <td className="px-4 text-left whitespace-nowrap py-2">{item.data}</td>
+                <td className="px-4 text-left whitespace-nowrap py-2">{item.duracao || '-'}</td>
+
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       {open && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96 space-y-4">
@@ -336,16 +384,13 @@ export default function FormModalAssiduidade() {
               </div>
             )}
 
-
-            <input
+              <input
               type="time"
               name="entrada"
               value={formData.entrada}
               onChange={handleChange}
               className="w-full border px-3 py-2 rounded"
               required
-              placeholder="Horário de entrada"
-              title="Horário de entrada"
             />
 
             <input
@@ -355,8 +400,6 @@ export default function FormModalAssiduidade() {
               onChange={handleChange}
               className="w-full border px-3 py-2 rounded"
               required
-              placeholder="Horário de entrada"
-              title="Horário de entrada"
             />
 
             <div className="flex gap-2">
@@ -383,36 +426,6 @@ export default function FormModalAssiduidade() {
         </div>
       )}
 
-      {/* Modal para cadastrar novos rostos */}
-      {isRegisteringFace && isCameraOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96 space-y-4">
-            <h2 className="text-xl font-semibold text-gray-800">Cadastrar Novo Rosto</h2>
-            
-            <video 
-              ref={videoRef} 
-              autoPlay 
-              playsInline 
-              className="w-full h-auto border rounded"
-            />
-            
-            <input
-              type="text"
-              placeholder="Nome do Funcionário"
-              value={newFaceName}
-              onChange={(e) => setNewFaceName(e.target.value)}
-              className="w-full border px-3 py-2 rounded"
-              required
-            />
-            
-           
-            
-            {error && <p className="text-red-600 text-sm">{error}</p>}
-          </div>
-        </div>
-      )}
-
-      {/* Modal para registrar saída */}
       {isRegisteringExit && isCameraOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96 space-y-4">
@@ -444,45 +457,6 @@ export default function FormModalAssiduidade() {
           </div>
         </div>
       )}
-
-      <div className="overflow-auto bg-white rounded shadow">
-        <table className="min-w-full divide-y divide-gray-200 text-sm">
-          <thead className="bg-gray-50 px-10">
-            <tr className=''>
-              <th className="px-4 py-2">Funcionário</th>
-              <th className="px-1 py-2">Entrada</th>
-              <th className="px-4 py-2">Saída</th>
-              <th className="px-4 py-2">Data</th>
-              <th className="px-4 py-2">Duração</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100 ">
-            {assiduidadeList.map((item) => (
-              <tr key={item.id} className="hover:bg-gray-50 mx-24">
-                <td className="px-10 py-2">{item.funcionario_nome}</td>
-                <td className="px-15 py-2">{item.entrada}</td>
-                <td className="px-10 py-2">
-                  {editingId === item.id ? (
-                    <input
-                      type="time"
-                      className="border px-2 py-1 rounded"
-                      value={editedSaida}
-                      onChange={(e) => setEditedSaida(e.target.value)}
-                      placeholder="Digite o horário de saída"
-                      title="Horário de saída"
-                    />
-                  ) : (
-                    item.saida || '-'
-                  )}
-                </td>
-                <td className="px-4 py-2">{item.data}</td>
-                <td className="px-4 py-2">{item.duracao || '-'}</td>
-                
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
     </div>
   );
 }
