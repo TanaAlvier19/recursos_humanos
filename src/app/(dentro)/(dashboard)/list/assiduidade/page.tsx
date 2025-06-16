@@ -5,7 +5,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { FileText, LogIn, LogOut, UserPlus } from 'lucide-react';
 import { AuthContext } from '@/app/context/AuthContext';
-
+import Swal from "sweetalert2"
 interface Assiduidade {
   id: number;
   funcionario: number;
@@ -177,7 +177,24 @@ export default function FormModalAssiduidade() {
         } else {
           const jaExisteEntrada = listaAssiduidade.some(item => item.funcionario === dados.funcionario_id && item.data === dataAtual && item.saida === null);
           if (jaExisteEntrada) {
-            definirErro('Entrada já registrada para hoje');
+            Swal.fire({
+         title: 'Ops.. Registro de Entrada Repetido',
+          text: 'Já tens o registro de entrada feito para hoje',
+          icon: 'warning',
+          showClass: {
+          popup: 'animate__animated animate__fadeInDown'
+          },
+          hideClass: {
+          popup: 'animate__animated animate__fadeOutUp'
+          },
+          confirmButtonText: 'Fechar',
+          customClass: {
+          popup: 'rounded-xl shadow-lg',
+          confirmButton: 'bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded focus:outline-none'
+          },
+          background: '#f9f9f9',
+          backdrop: `rgba(0, 0, 0, 0.4) left top no-repeat`
+});
             fecharCamera();
             return;
           }
