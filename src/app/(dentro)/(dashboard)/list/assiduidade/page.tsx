@@ -185,7 +185,7 @@ export default function FormModalAssiduidade() {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/facial/', {
+      const response = await fetch('https://8d3e-102-214-36-231.ngrok-free.app/api/facial/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: imageData }),
