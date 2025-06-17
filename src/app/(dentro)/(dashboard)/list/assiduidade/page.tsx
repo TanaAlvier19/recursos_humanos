@@ -146,10 +146,11 @@ export default function FormModalAssiduidade() {
       });
 
       if (!resposta.ok) {
-        const erroDados = await resposta.json();
-        throw new Error(erroDados.error || 'Erro ao registrar entrada');
+        Swal.fire('Ops.. Tente Novamente ou Verifique o servidor', 'error')
       }
-
+      if(resposta.ok){
+        Swal.fire('Registro efeito com sucesso', 'sucess')
+      }
       await carregarAssiduidade();
       definirModalAberto(false);
       definirDadosFormulario({ funcionario: '', entrada: '', data: '' });
@@ -297,8 +298,8 @@ export default function FormModalAssiduidade() {
             <div className="flex gap-2">
               <button onClick={reconhecerFace} className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded">Reconhecer</button>
               <button onClick={fecharCamera} className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded">Cancelar</button>
+          
             </div>
-            {erro && <p className="text-red-600 text-sm">{erro}</p>}
           </div>
         </div>
       )}
