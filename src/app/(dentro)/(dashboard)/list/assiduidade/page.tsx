@@ -234,7 +234,7 @@ export default function FormModalAssiduidade() {
       })};
       if (res.ok){
         Swal.fire({
-    icon: 'sucess',
+    icon: 'success',
     title: 'Registro feito',
     text: 'Tenha um ótimo Trabalho',
   });
@@ -364,10 +364,6 @@ export default function FormModalAssiduidade() {
         </div>
       )}
 
-     
-        </div>
-      )}
-
       {isRegisteringExit && isCameraOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96 space-y-4">
@@ -398,6 +394,7 @@ export default function FormModalAssiduidade() {
           </div>
         </div>
       )}
+
 <>
   <div className="block sm:hidden space-y-4">
         {assiduidadeList.map(item => (
@@ -426,7 +423,7 @@ export default function FormModalAssiduidade() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {listaAssiduidade.map(item => (
+            {assiduidadeList.map(item => (
               <tr key={item.id} className="hover:bg-gray-50">
                 <td className="px-4 py-2 whitespace-nowrap">{item.funcionario_nome}</td>
                 <td className="px-4 py-2 whitespace-nowrap">{item.entrada}</td>
@@ -438,7 +435,8 @@ export default function FormModalAssiduidade() {
           </tbody>
         </table>
       </div>
-  </>
+    </>
+
     </div>
   );
 }
