@@ -136,7 +136,6 @@ export default function DatabaseManager() {
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Failed to delete record')
 
-      // Recarrega os dados
       await fetchTableData()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete record')
@@ -187,11 +186,9 @@ export default function DatabaseManager() {
     if(response.ok){
       Swal.fire('Cadastrado', 'sucess')
     }
-    if (!(nome1 && email1)) {
       await fetchTableData()
       setNewRecordForm({})
       setShowCreateForm(false)
-    }
 
   } catch (err) {
     setError(err instanceof Error ? err.message : 'Erro ao criar registro')
@@ -214,9 +211,8 @@ export default function DatabaseManager() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-center text-white text-4xl 
-      font-bold py-10 bg-gradient-to-r from-[#3ffc2f] to-[#2f83c3] 
-      bg-clip-text text-transparent ">Gerenciador de Departamentos</h1>
+      <h1 className="text-center text-blue-700 sm:text-4xl 
+      font-bold ">Gerenciador de Departamentos</h1>
         
       <div className="mb-6 bg-white p-4 rounded-lg shadow">
         <div className="flex flex-wrap items-end gap-4">
@@ -292,7 +288,6 @@ export default function DatabaseManager() {
         </div>
       )}
 
-      {/* Formulário de Criação */}
       {showCreateForm && selectedTable && (
         <div className="bg-white p-4 rounded-lg shadow mb-6">
           <h2 className="text-xl font-semibold mb-4">Criar Novo Registro</h2>
