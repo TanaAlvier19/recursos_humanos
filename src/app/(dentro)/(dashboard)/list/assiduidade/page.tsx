@@ -231,7 +231,7 @@ export default function FormModalAssiduidade() {
     icon: 'warning',
     title: 'Ops..',
     text: 'Verique o seu Servidor',
-      }
+      })};
       if (res.ok){
         Swal.fire({
     icon: 'sucess',
