@@ -263,42 +263,24 @@ export default function FormModalAssiduidade() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-800">Gestão de Assiduidade</h1>
-        <button
-          onClick={exportToPDF}
-          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow"
-        >
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Gestão de Assiduidade</h1>
+        <button onClick={exportarPDF} className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300 min-h-[48px]">
+          <FileText className="w-5 h-5" />
           Exportar PDF
         </button>
-      </div>
+      </header>
 
-      <div className="flex space-x-4">
-        <button
-          onClick={() => setOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow"
-        >
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <button onClick={() => setOpen(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 min-h-[48px] w-full sm:w-auto">
+          <LogIn className="w-5 h-5" />
           Registrar Entrada
         </button>
-        
-        <button
-          onClick={openCameraSaida}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow"
-        >
+        <button onClick={openCameraSaida} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-300 min-h-[48px] w-full sm:w-auto">
+          <LogOut className="w-5 h-5" />
           Registrar Saída
         </button>
-        
-        <button
-          onClick={() => {
-            setIsRegisteringFace(true);
-            openCamera();
-          }}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded shadow"
-        >
-          Cadastrar Novo Rosto
-        </button>
       </div>
-
       {open && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96 space-y-4">
@@ -444,8 +426,8 @@ export default function FormModalAssiduidade() {
           </div>
         </div>
       )}
-
-      <div className="overflow-auto bg-white rounded shadow">
+  
+      <div className="sm:block hidden overflow-auto bg-white rounded shadow">
         <table className="min-w-full divide-y divide-gray-200 text-sm">
           <thead className="bg-gray-50 px-10">
             <tr className=''>
