@@ -127,7 +127,7 @@ function calculateDays(start: string, end: string): number {
             </div>
           ))}
         </div>
-      <Table className="md:mt-8 sm:block hidden">
+      <Table className="sm:block hidden">
         <TableHeader>
           <TableRow>
             <TableHead>Motivo</TableHead>
