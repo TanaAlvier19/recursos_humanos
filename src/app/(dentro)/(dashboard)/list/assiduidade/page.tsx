@@ -137,28 +137,7 @@ export default function FormModalAssiduidade() {
   };
 
   const reconhecerFace = async () => {
-    definirCarregando(true);
-    definirErro(null);
-    try {
-      const resposta = await fetch('https://backend-django-2-7qpl.onrender.com/api/assiduidade/todos/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ funcionario: dadosFormulario.funcionario, entrada: dadosFormulario.entrada, data: dadosFormulario.data }),
-      });
-
-      if (!resposta.ok) {
-        const erroDados = await resposta.json();
-        throw new Error(erroDados.error || 'Erro ao registrar entrada');
-      }
-
-      await carregarAssiduidade();
-      definirModalAberto(false);
-      definirDadosFormulario({ funcionario: '', entrada: '', data: '' });
-    } catch (err: any) {
-      definirErro(err.message);
-    } finally {
-      definirCarregando(false);
-    }
+    
     const imagem = capturarImagem();
     if (!imagem) return definirErro('Falha ao capturar imagem');
     try {
@@ -185,6 +164,28 @@ export default function FormModalAssiduidade() {
       }
     } catch (err) {
       definirErro('Erro no reconhecimento facial: ' + (err as Error).message);
+    }
+    definirCarregando(true);
+    definirErro(null);
+    try {
+      const resposta = await fetch('https://backend-django-2-7qpl.onrender.com/api/assiduidade/todos/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ funcionario: dadosFormulario.funcionario, entrada: dadosFormulario.entrada, data: dadosFormulario.data }),
+      });
+
+      if (!resposta.ok) {
+        const erroDados = await resposta.json();
+        throw new Error(erroDados.error || 'Erro ao registrar entrada');
+      }
+
+      await carregarAssiduidade();
+      definirModalAberto(false);
+      definirDadosFormulario({ funcionario: '', entrada: '', data: '' });
+    } catch (err: any) {
+      definirErro(err.message);
+    } finally {
+      definirCarregando(false);
     }
   };
 
