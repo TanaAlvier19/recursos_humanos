@@ -175,29 +175,6 @@ export default function FormModalAssiduidade() {
         if (registrandoSaida) {
           await registrarSaida(dados.funcionario_id, hora);
         } else {
-          const jaExisteEntrada = listaAssiduidade.some(item => item.funcionario === dados.funcionario_id && item.data === dataAtual && item.saida === null);
-          if (jaExisteEntrada) {
-            Swal.fire({
-         title: 'Ops.. Registro de Entrada Repetido',
-          text: 'Já tens o registro de entrada feito para hoje',
-          icon: 'warning',
-          showClass: {
-          popup: 'animate__animated animate__fadeInDown'
-          },
-          hideClass: {
-          popup: 'animate__animated animate__fadeOutUp'
-          },
-          confirmButtonText: 'Fechar',
-          customClass: {
-          popup: 'rounded-xl shadow-lg',
-          confirmButton: 'bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded focus:outline-none'
-          },
-          background: '#f9f9f9',
-          backdrop: `rgba(0, 0, 0, 0.4) left top no-repeat`
-});
-            fecharCamera();
-            return;
-          }
           definirDadosFormulario({ funcionario: dados.funcionario_id.toString(), entrada: hora, data: dataAtual });
         }
 
