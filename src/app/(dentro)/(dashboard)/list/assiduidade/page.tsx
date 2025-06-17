@@ -398,52 +398,38 @@ export default function FormModalAssiduidade() {
           </div>
         </div>
       )}
-      <><div className="block sm:hidden space-y-4">
+      <div className="block sm:hidden space-y-4">
         {listaAssiduidade.map(item => (
           <div key={item.id} className="bg-white rounded shadow p-4 space-y-2">
             <p><strong>Funcionário:</strong> {item.funcionario_nome}</p>
             <p><strong>Entrada:</strong> {item.entrada}</p>
-            <p><strong>Saída:</strong> {idEdicao === item.id ? (
-              <input type="time" className="border px-2 py-1 rounded" value={editedSaida} onChange={(e) => setEditedSaida(e.target.value)}/>
-            ) : (item.saida || '-')}</p>
+            <p><strong>Saída:</strong> 
+              {item.saida}</p>
             <p><strong>Data:</strong> {item.data}</p>
             <p><strong>Duração:</strong> {item.duracao || '-'}</p>
           </div>
         ))}
       </div>
-      <div className="sm:block hidden overflow-auto bg-white rounded shadow">
+
+      <div className="hidden sm:block overflow-x-auto bg-white rounded shadow">
         <table className="min-w-full divide-y divide-gray-200 text-sm">
-          <thead className="bg-gray-50 px-10">
-            <tr className=''>
-              <th className="px-4 py-2">Funcionário</th>
-              <th className="px-1 py-2">Entrada</th>
-              <th className="px-4 py-2">Saída</th>
-              <th className="px-4 py-2">Data</th>
-              <th className="px-4 py-2">Duração</th>
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-4 py-2 text-left whitespace-nowrap">Funcionário</th>
+              <th className="px-4 py-2 text-left whitespace-nowrap">Entrada</th>
+              <th className="px-4 py-2 text-left whitespace-nowrap">Saída</th>
+              <th className="px-4 py-2 text-left whitespace-nowrap">Data</th>
+              <th className="px-4 py-2 text-left whitespace-nowrap">Duração</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 ">
-            {assiduidadeList.map((item) => (
-              <tr key={item.id} className="hover:bg-gray-50 mx-24">
-                <td className="px-10 py-2">{item.funcionario_nome}</td>
-                <td className="px-15 py-2">{item.entrada}</td>
-                <td className="px-10 py-2">
-                  {editingId === item.id ? (
-                    <input
-                      type="time"
-                      className="border px-2 py-1 rounded"
-                      value={editedSaida}
-                      onChange={(e) => setEditedSaida(e.target.value)}
-                      placeholder="Digite o horário de saída"
-                      title="Horário de saída"
-                    />
-                  ) : (
-                    item.saida || '-'
-                  )}
-                </td>
-                <td className="px-4 py-2">{item.data}</td>
-                <td className="px-4 py-2">{item.duracao || '-'}</td>
-                
+          <tbody className="divide-y divide-gray-100">
+            {listaAssiduidade.map(item => (
+              <tr key={item.id} className="hover:bg-gray-50">
+                <td className="px-4 py-2 whitespace-nowrap">{item.funcionario_nome}</td>
+                <td className="px-4 py-2 whitespace-nowrap">{item.entrada}</td>
+                <td className="px-4 py-2 whitespace-nowrap">{item.saida || '-'}</td>
+                <td className="px-4 py-2 whitespace-nowrap">{item.data}</td>
+                <td className="px-4 py-2 whitespace-nowrap">{item.duracao || '-'}</td>
               </tr>
             ))}
           </tbody>
