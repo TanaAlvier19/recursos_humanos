@@ -36,6 +36,8 @@ export  default function AdminLeavesPage() {
   const [leaves, setLeaves] = useState<Leave[]>([])
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
+  const [file, setFile] = useState<File | null>(null);
+
 
   useEffect(() => {
     fetch('https://backend-django-2-7qpl.onrender.com/api/leaves/all/')
@@ -44,7 +46,9 @@ export  default function AdminLeavesPage() {
       .catch(err => console.error(err))
       .finally(() => setLoading(false))
   }, [])
-
+const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) setFile(e.target.files[0]);
+  };
   const handleDecision = async (id: number, decision: 'aprovado' | 'rejeitado') => {
     const comment = await Swal.fire({
       title: decision === 'aprovado' ? 'Comentário de aprovação' : 'Comentário de reprovação',
@@ -73,54 +77,83 @@ export  default function AdminLeavesPage() {
   if (loading) return <p>Carregando...</p>
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Pedidos de Dispensa</h1>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Funcionário</TableHead>
-            <TableHead>Motivo</TableHead>
-            <TableHead>Período</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Comentário</TableHead>
-            <TableHead>Justificativo</TableHead>
-            <TableHead>Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {leaves.map(l => (
-            <TableRow key={l.id}>
-              <TableCell>{l.funcionario_nome || '—'}</TableCell>
-              <TableCell>{l.motivo}</TableCell>
-              <TableCell>
-                <span className="text-sm text-black-800">
-               {calculateDays(l.inicio, l.fim)} dias
-              </span></TableCell>
-              <TableCell>{l.status}</TableCell>
-              <TableCell>{l.admin_comentario || '—'}</TableCell>
-              <TableCell>
-                {l.justificativo ? (
-                  <a href={l.justificativo} target="_blank">Ver PDF</a>
-                ) : "—"}
-              </TableCell>
-              <TableCell className="flex gap-2">
-              {l.status === "pendente" ? (
-           <>
-      <Button className="bg-green-500" onClick={() => handleDecision(l.id, "aprovado")}>
-        Aprovar
-      </Button>
-      <Button variant="destructive" onClick={() => handleDecision(l.id, "rejeitado")}>
-        Reprovar
-      </Button>
-    </>
-  ) : (
-    <span className="italic text-gray-500">Já {l.status}</span>
-  )}
-</TableCell>
+    <><div className="block sm:hidden space-y-4">
+        <h1 className="text-2xl font-bold mb-4">Pedidos de Dispensa</h1>
+
+      {leaves.map(l => (
+        <div key={l.id} className="bg-white rounded shadow p-4 space-y-2">
+          <p><strong>Funcionário:</strong> {l.funcionario_nome}</p>
+          <p><strong>Motivo:</strong> {l.motivo}</p>
+          <p><strong>Período:</strong><span className="text-sm text-black-800">
+                    {calculateDays(l.inicio, l.fim)} dias
+                  </span></p>
+          <p><strong>Status:</strong> {l.status}</p>
+          <p><strong>Comentário:</strong> {l.admin_comentario || '-'}</p>
+          <p><strong>Justificativo:</strong>  {l.justificativo ? (
+                    <a href={l.justificativo} target="_blank">Ver PDF</a>
+                  ) : "—"}</p>
+          <p><strong>Ações:</strong> {l.status === "pendente" ? (
+                    <>
+                      <Button className="bg-green-500" onClick={() => handleDecision(l.id, "aprovado")}>
+                        Aprovar
+                      </Button>
+                      <Button variant="destructive" onClick={() => handleDecision(l.id, "rejeitado")}>
+                        Reprovar
+                      </Button>
+                    </>
+                  ) : (
+                    <span className="italic text-gray-500">Já {l.status}</span>
+                  )}</p>
+        </div>
+      ))}
+    </div><div className="sm:block hidden p-6">
+        <h1 className="text-2xl font-bold mb-4">Pedidos de Dispensa</h1>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Funcionário</TableHead>
+              <TableHead>Motivo</TableHead>
+              <TableHead>Período</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Comentário</TableHead>
+              <TableHead>Justificativo</TableHead>
+              <TableHead>Ações</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {leaves.map(l => (
+              <TableRow key={l.id}>
+                <TableCell>{l.funcionario_nome || '—'}</TableCell>
+                <TableCell>{l.motivo}</TableCell>
+                <TableCell>
+                  <span className="text-sm text-black-800">
+                    {calculateDays(l.inicio, l.fim)} dias
+                  </span></TableCell>
+                <TableCell>{l.status}</TableCell>
+                <TableCell>{l.admin_comentario || '—'}</TableCell>
+                <TableCell>
+                  {l.justificativo ? (
+                    <a href={l.justificativo} target="_blank">Ver PDF</a>
+                  ) : "—"}
+                </TableCell>
+                <TableCell className="flex gap-2">
+                  {l.status === "pendente" ? (
+                    <>
+                      <Button className="bg-green-500" onClick={() => handleDecision(l.id, "aprovado")}>
+                        Aprovar
+                      </Button>
+                      <Button variant="destructive" onClick={() => handleDecision(l.id, "rejeitado")}>
+                        Reprovar
+                      </Button>
+                    </>
+                  ) : (
+                    <span className="italic text-gray-500">Já {l.status}</span>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div></>
   )
 }
