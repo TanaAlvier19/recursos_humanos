@@ -101,7 +101,7 @@ try {
   const blob = await (await fetch(imageData)).blob(); // converte base64 para blob
   formData.append("image", blob, "face.jpg");
 
-  const response = await fetch('https://8d3e-102-214-36-231.ngrok-free.app/api/register_face/', {
+  const response = await fetch('https://backend-django-2-7qpl.onrender.com/api/register_face/', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`,
@@ -130,7 +130,7 @@ try {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-bold">Minha Assiduidade de {userName}</h1>
+      <h1 className="md:text-2xl font-bold">Minha Assiduidade de {userName}</h1>
 
       <div className="flex space-x-2">
         
@@ -157,23 +157,23 @@ try {
         </div>
       )}
 
-      <div className="overflow-auto bg-white rounded shadow">
-        <table className="min-w-full text-sm">
+      <div className="w-full overflow-x-auto bg-white rounded shadow">
+        <table className="min-w-max w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className="p-2">Entrada</th>
-              <th className="p-2">Saída</th>
-              <th className="p-2">Data</th>
-              <th className="p-2">Duração</th>  
+              <th className="p-2 text-left whitespace-nowrap">Entrada</th>
+              <th className="p-2 text-left whitespace-nowrap">Saída</th>
+              <th className="p-2 text-left whitespace-nowrap">Data</th>
+              <th className="p-2 text-left whitespace-nowrap">Duração</th>  
             </tr>
           </thead>
           <tbody>
             {assiduidadeList.map(item => (
               <tr key={item.id} className="hover:bg-gray-50">
-                <td className="p-2">{item.entrada}</td>
-                <td className="p-2">{item.saida || '-'}</td>
-                <td className="p-2">{item.data}</td>
-                <td className="p-2">{item.duracao || '-'}</td>
+                <td className="p-2 whitespace-nowrap">{item.entrada}</td>
+                <td className="p-2 whitespace-nowrap">{item.saida || '-'}</td>
+                <td className="p-2 whitespace-nowrap">{item.data}</td>
+                <td className="p-2 whitespace-nowrap">{item.duracao || '-'}</td>
               </tr>
             ))}
           </tbody>
