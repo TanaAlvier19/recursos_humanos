@@ -186,13 +186,12 @@ export default function FormModalAssiduidade() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: imageData }),
       });
-
       const data = await response.json();
       console.log(data)
       if (response.ok && data.funcionario_id) {
         const now = new Date();
         const hora = now.toTimeString().slice(0, 5); 
-        const dataAtual = now.toISOString().split('T')[0]; // YYYY-MM-DD
+        const dataAtual = now.toISOString().split('T')[0];
 
         if (isRegisteringExit) {
           await registrarSaida(data.funcionario_id, hora);
@@ -211,7 +210,6 @@ export default function FormModalAssiduidade() {
     } catch (err) {
       setError('Erro no reconhecimento facial: ' + (err as Error).message);
     }
-    const handleEntrada = async () => {
     const acessToken=localStorage.getItem('access_token')
     setLoading(true);
     setError(null);
@@ -248,8 +246,6 @@ export default function FormModalAssiduidade() {
     } finally {
       setLoading(false);
     }
-  };
-
   };
 
   const registrarSaida = async (funcionarioId: number, horaSaida: string) => {
@@ -313,7 +309,7 @@ export default function FormModalAssiduidade() {
       </header>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <button onClick={() => setOpen(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 min-h-[48px] w-full sm:w-auto">
+        <button onClick={openCamera} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 min-h-[48px] w-full sm:w-auto">
           <LogIn className="w-5 h-5" />
           Registrar Entrada
         </button>
@@ -322,19 +318,13 @@ export default function FormModalAssiduidade() {
           Registrar Saída
         </button>
       </div>
-      {open && (
+      {isCameraOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96 space-y-4">
             <h2 className="text-xl font-semibold text-gray-800">Nova Entrada</h2>
 
-            <button
-              onClick={openCamera}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded"
-            >
-              Reconhecimento Facial
-            </button>
+            
 
-            {isCameraOpen && (
               <div className="space-y-2">
                 <video 
                   ref={videoRef} 
@@ -357,9 +347,6 @@ export default function FormModalAssiduidade() {
                   </button>
                 </div>
               </div>
-            )}
-
-
           </div>
         </div>
       )}
