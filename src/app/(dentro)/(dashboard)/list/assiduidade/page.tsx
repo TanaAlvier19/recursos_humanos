@@ -398,7 +398,8 @@ export default function FormModalAssiduidade() {
           </div>
         </div>
       )}
-      <div className="block sm:hidden space-y-4">
+<>
+  <div className="block sm:hidden space-y-4">
         {listaAssiduidade.map(item => (
           <div key={item.id} className="bg-white rounded shadow p-4 space-y-2">
             <p><strong>Funcionário:</strong> {item.funcionario_nome}</p>
@@ -410,6 +411,8 @@ export default function FormModalAssiduidade() {
           </div>
         ))}
       </div>
+</>
+      
 
       <div className="hidden sm:block overflow-x-auto bg-white rounded shadow">
         <table className="min-w-full divide-y divide-gray-200 text-sm">
