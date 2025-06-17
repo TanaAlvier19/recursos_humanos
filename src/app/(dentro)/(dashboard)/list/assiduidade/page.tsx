@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef , useContext} from 'react';
 import jsPDF from 'jspdf';
+import { FileText, LogIn, LogOut, UserPlus } from 'lucide-react';
 import autoTable from 'jspdf-autotable';
 import { AuthContext } from '@/app/context/AuthContext';
 interface Assiduidade {
