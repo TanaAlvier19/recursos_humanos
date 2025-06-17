@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef , useContext} from 'react';
 import jsPDF from 'jspdf';
+import Swal from "sweetalert2"
 import { FileText, LogIn, LogOut, UserPlus } from 'lucide-react';
 import autoTable from 'jspdf-autotable';
 import { AuthContext } from '@/app/context/AuthContext';
@@ -210,6 +211,45 @@ export default function FormModalAssiduidade() {
     } catch (err) {
       setError('Erro no reconhecimento facial: ' + (err as Error).message);
     }
+    const handleEntrada = async () => {
+    const acessToken=localStorage.getItem('access_token')
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('https://backend-django-2-7qpl.onrender.com/api/assiduidade/todos/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          funcionario: formData.funcionario,
+          entrada: formData.entrada,
+          data: formData.data,
+        }),
+      });
+
+      if (!res.ok) {
+       Swal.fire({
+    icon: 'warning',
+    title: 'Ops..',
+    text: 'Verique o seu Servidor',
+      }
+      if (res.ok){
+        Swal.fire({
+    icon: 'sucess',
+    title: 'Registro feito',
+    text: 'Tenha um ótimo Trabalho',
+  });
+      }
+      await fetchAssiduidade();
+      
+      setOpen(false);
+      setFormData({ funcionario: '', entrada: '', data: '' });
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   };
 
   const registrarSaida = async (funcionarioId: number, horaSaida: string) => {
@@ -320,78 +360,11 @@ export default function FormModalAssiduidade() {
             )}
 
 
-            <input
-              type="time"
-              name="entrada"
-              value={formData.entrada}
-              onChange={handleChange}
-              className="w-full border px-3 py-2 rounded"
-              required
-              placeholder="Horário de entrada"
-              title="Horário de entrada"
-            />
-
-            <input
-              type="date"
-              name="data"
-              value={formData.data}
-              onChange={handleChange}
-              className="w-full border px-3 py-2 rounded"
-              required
-              placeholder="Horário de entrada"
-              title="Horário de entrada"
-            />
-
-            <div className="flex gap-2">
-              <button
-                onClick={handleEntrada}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded"
-                disabled={loading}
-              >
-                {loading ? 'Salvando...' : 'Salvar'}
-              </button>
-              <button
-                onClick={() => {
-                  setOpen(false);
-                  closeCamera();
-                }}
-                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded"
-              >
-                Cancelar
-              </button>
-            </div>
-
-            {error && <p className="text-red-600 text-sm">{error}</p>}
           </div>
         </div>
       )}
 
-      {/* Modal para cadastrar novos rostos */}
-      {isRegisteringFace && isCameraOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96 space-y-4">
-            <h2 className="text-xl font-semibold text-gray-800">Cadastrar Novo Rosto</h2>
-            
-            <video 
-              ref={videoRef} 
-              autoPlay 
-              playsInline 
-              className="w-full h-auto border rounded"
-            />
-            
-            <input
-              type="text"
-              placeholder="Nome do Funcionário"
-              value={newFaceName}
-              onChange={(e) => setNewFaceName(e.target.value)}
-              className="w-full border px-3 py-2 rounded"
-              required
-            />
-            
-           
-            
-            {error && <p className="text-red-600 text-sm">{error}</p>}
-          </div>
+     
         </div>
       )}
 
@@ -423,11 +396,22 @@ export default function FormModalAssiduidade() {
               </button>
             </div>
             
-            {error && <p className="text-red-600 text-sm">{error}</p>}
           </div>
         </div>
       )}
-  
+      <div className="block sm:hidden space-y-4">
+        {listaAssiduidade.map(item => (
+          <div key={item.id} className="bg-white rounded shadow p-4 space-y-2">
+            <p><strong>Funcionário:</strong> {item.funcionario_nome}</p>
+            <p><strong>Entrada:</strong> {item.entrada}</p>
+            <p><strong>Saída:</strong> {idEdicao === item.id ? (
+              <input type="time" className="border px-2 py-1 rounded" value={editedSaida} onChange={(e) => setEditedSaida(e.target.value)}/>
+            ) : (item.saida || '-')}</p>
+            <p><strong>Data:</strong> {item.data}</p>
+            <p><strong>Duração:</strong> {item.duracao || '-'}</p>
+          </div>
+        ))}
+      </div>
       <div className="sm:block hidden overflow-auto bg-white rounded shadow">
         <table className="min-w-full divide-y divide-gray-200 text-sm">
           <thead className="bg-gray-50 px-10">
