@@ -26,6 +26,12 @@ export type Leave = {
   funcionario_nome: string;
 };
 
+function formatDate(dateString: string) {
+  const d = new Date(dateString);
+  return isNaN(d.getTime())
+    ? "—"
+    : d.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
+}
 
 export default function EmployeeLeavesPage() {
   const { accessToken } = useContext(AuthContext);
@@ -82,7 +88,6 @@ function calculateDays(start: string, end: string): number {
   if (loading) return <p>Carregando...</p>;
 
   return (
-    
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Meus Pedidos de Dispensa</h1>
       <form onSubmit={handleSubmit} className="space-y-4 mb-6">
@@ -107,12 +112,12 @@ function calculateDays(start: string, end: string): number {
         </div>
         <div>
           <label>Justificativa (PDF)</label>
-          <Input type="file" required accept="application/pdf" onChange={handleFileChange} />
+          <Input type="file" accept="application/pdf" onChange={handleFileChange} />
         </div>
         <Button type="submit">Enviar Pedido</Button>
       </form>
 
-      <Table className="md:mt-8">
+      <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Motivo</TableHead>
@@ -142,6 +147,6 @@ function calculateDays(start: string, end: string): number {
           ))}
         </TableBody>
       </Table>
-    </div></>
+    </div>
   );
 }
