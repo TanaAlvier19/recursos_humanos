@@ -57,30 +57,7 @@ export default function FormModalAssiduidade() {
     definirDadosFormulario(prev => ({ ...prev, [name]: value }));
   };
 
-  const registrarEntrada = async () => {
-    definirCarregando(true);
-    definirErro(null);
-    try {
-      const resposta = await fetch('https://backend-django-2-7qpl.onrender.com/api/assiduidade/todos/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dadosFormulario),
-      });
-
-      if (!resposta.ok) {
-        const erroDados = await resposta.json();
-        throw new Error(erroDados.error || 'Erro ao registrar entrada');
-      }
-
-      await carregarAssiduidade();
-      definirModalAberto(false);
-      definirDadosFormulario({ funcionario: '', entrada: '', data: '' });
-    } catch (err: any) {
-      definirErro(err.message);
-    } finally {
-      definirCarregando(false);
-    }
-  };
+  
 
   const editarSaida = async (id: number, saida: string) => {
     definirCarregando(true);
@@ -158,6 +135,30 @@ export default function FormModalAssiduidade() {
   };
 
   const reconhecerFace = async () => {
+    const registrarEntrada = async () => {
+    definirCarregando(true);
+    definirErro(null);
+    try {
+      const resposta = await fetch('https://backend-django-2-7qpl.onrender.com/api/assiduidade/todos/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dadosFormulario),
+      });
+
+      if (!resposta.ok) {
+        const erroDados = await resposta.json();
+        throw new Error(erroDados.error || 'Erro ao registrar entrada');
+      }
+
+      await carregarAssiduidade();
+      definirModalAberto(false);
+      definirDadosFormulario({ funcionario: '', entrada: '', data: '' });
+    } catch (err: any) {
+      definirErro(err.message);
+    } finally {
+      definirCarregando(false);
+    }
+  };
     const imagem = capturarImagem();
     if (!imagem) return definirErro('Falha ao capturar imagem');
     try {
