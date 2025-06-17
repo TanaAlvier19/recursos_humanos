@@ -2,8 +2,6 @@
 
 import { useEffect, useState, useRef , useContext} from 'react';
 import jsPDF from 'jspdf';
-import Swal from "sweetalert2"
-import { FileText, LogIn, LogOut, UserPlus } from 'lucide-react';
 import autoTable from 'jspdf-autotable';
 import { AuthContext } from '@/app/context/AuthContext';
 interface Assiduidade {
@@ -181,17 +179,18 @@ export default function FormModalAssiduidade() {
     }
 
     try {
-      const response = await fetch('https://8d3e-102-214-36-231.ngrok-free.app/api/facial/', {
+      const response = await fetch('https://backend-django-2-7qpl.onrender.com/api/facial/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: imageData }),
       });
+
       const data = await response.json();
       console.log(data)
       if (response.ok && data.funcionario_id) {
         const now = new Date();
         const hora = now.toTimeString().slice(0, 5); 
-        const dataAtual = now.toISOString().split('T')[0];
+        const dataAtual = now.toISOString().split('T')[0]; // YYYY-MM-DD
 
         if (isRegisteringExit) {
           await registrarSaida(data.funcionario_id, hora);
@@ -209,42 +208,6 @@ export default function FormModalAssiduidade() {
       }
     } catch (err) {
       setError('Erro no reconhecimento facial: ' + (err as Error).message);
-    }
-    const acessToken=localStorage.getItem('access_token')
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch('https://backend-django-2-7qpl.onrender.com/api/assiduidade/todos/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          funcionario: formData.funcionario,
-          entrada: formData.entrada,
-          data: formData.data,
-        }),
-      });
-
-      if (!res.ok) {
-       Swal.fire({
-    icon: 'warning',
-    title: 'Ops..',
-    text: 'Verique o seu Servidor',
-      })};
-      if (res.ok){
-        Swal.fire({
-    icon: 'success',
-    title: 'Registro feito',
-    text: 'Tenha um ótimo Trabalho',
-  });
-      }
-      await fetchAssiduidade();
-      
-      setOpen(false);
-      setFormData({ funcionario: '', entrada: '', data: '' });
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -300,31 +263,55 @@ export default function FormModalAssiduidade() {
 
   return (
     <div className="p-6 space-y-6">
-      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Gestão de Assiduidade</h1>
-        <button onClick={exportToPDF} className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300 min-h-[48px]">
-          <FileText className="w-5 h-5" />
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-800">Gestão de Assiduidade</h1>
+        <button
+          onClick={exportToPDF}
+          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow"
+        >
           Exportar PDF
         </button>
-      </header>
+      </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <button onClick={openCamera} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 min-h-[48px] w-full sm:w-auto">
-          <LogIn className="w-5 h-5" />
+      <div className="flex space-x-4">
+        <button
+          onClick={() => setOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow"
+        >
           Registrar Entrada
         </button>
-        <button onClick={openCameraSaida} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-300 min-h-[48px] w-full sm:w-auto">
-          <LogOut className="w-5 h-5" />
+        
+        <button
+          onClick={openCameraSaida}
+          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow"
+        >
           Registrar Saída
         </button>
+        
+        <button
+          onClick={() => {
+            setIsRegisteringFace(true);
+            openCamera();
+          }}
+          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded shadow"
+        >
+          Cadastrar Novo Rosto
+        </button>
       </div>
-      {isCameraOpen && (
+
+      {open && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96 space-y-4">
             <h2 className="text-xl font-semibold text-gray-800">Nova Entrada</h2>
 
-            
+            <button
+              onClick={openCamera}
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded"
+            >
+              Reconhecimento Facial
+            </button>
 
+            {isCameraOpen && (
               <div className="space-y-2">
                 <video 
                   ref={videoRef} 
@@ -347,10 +334,85 @@ export default function FormModalAssiduidade() {
                   </button>
                 </div>
               </div>
+            )}
+
+
+            <input
+              type="time"
+              name="entrada"
+              value={formData.entrada}
+              onChange={handleChange}
+              className="w-full border px-3 py-2 rounded"
+              required
+              placeholder="Horário de entrada"
+              title="Horário de entrada"
+            />
+
+            <input
+              type="date"
+              name="data"
+              value={formData.data}
+              onChange={handleChange}
+              className="w-full border px-3 py-2 rounded"
+              required
+              placeholder="Horário de entrada"
+              title="Horário de entrada"
+            />
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleEntrada}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded"
+                disabled={loading}
+              >
+                {loading ? 'Salvando...' : 'Salvar'}
+              </button>
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  closeCamera();
+                }}
+                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded"
+              >
+                Cancelar
+              </button>
+            </div>
+
+            {error && <p className="text-red-600 text-sm">{error}</p>}
           </div>
         </div>
       )}
 
+      {/* Modal para cadastrar novos rostos */}
+      {isRegisteringFace && isCameraOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96 space-y-4">
+            <h2 className="text-xl font-semibold text-gray-800">Cadastrar Novo Rosto</h2>
+            
+            <video 
+              ref={videoRef} 
+              autoPlay 
+              playsInline 
+              className="w-full h-auto border rounded"
+            />
+            
+            <input
+              type="text"
+              placeholder="Nome do Funcionário"
+              value={newFaceName}
+              onChange={(e) => setNewFaceName(e.target.value)}
+              className="w-full border px-3 py-2 rounded"
+              required
+            />
+            
+           
+            
+            {error && <p className="text-red-600 text-sm">{error}</p>}
+          </div>
+        </div>
+      )}
+
+      {/* Modal para registrar saída */}
       {isRegisteringExit && isCameraOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96 space-y-4">
@@ -378,52 +440,49 @@ export default function FormModalAssiduidade() {
               </button>
             </div>
             
+            {error && <p className="text-red-600 text-sm">{error}</p>}
           </div>
         </div>
       )}
 
-<>
-  <div className="block sm:hidden space-y-4">
-        {assiduidadeList.map(item => (
-          <div key={item.id} className="bg-white rounded shadow p-4 space-y-2">
-            <p><strong>Funcionário:</strong> {item.funcionario_nome}</p>
-            <p><strong>Entrada:</strong> {item.entrada}</p>
-            <p><strong>Saída:</strong> 
-              {item.saida}</p>
-            <p><strong>Data:</strong> {item.data}</p>
-            <p><strong>Duração:</strong> {item.duracao || '-'}</p>
-          </div>
-        ))}
-      </div>
-
-      
-
-      <div className="hidden sm:block overflow-x-auto bg-white rounded shadow">
+      <div className="overflow-auto bg-white rounded shadow">
         <table className="min-w-full divide-y divide-gray-200 text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-2 text-left whitespace-nowrap">Funcionário</th>
-              <th className="px-4 py-2 text-left whitespace-nowrap">Entrada</th>
-              <th className="px-4 py-2 text-left whitespace-nowrap">Saída</th>
-              <th className="px-4 py-2 text-left whitespace-nowrap">Data</th>
-              <th className="px-4 py-2 text-left whitespace-nowrap">Duração</th>
+          <thead className="bg-gray-50 px-10">
+            <tr className=''>
+              <th className="px-4 py-2">Funcionário</th>
+              <th className="px-1 py-2">Entrada</th>
+              <th className="px-4 py-2">Saída</th>
+              <th className="px-4 py-2">Data</th>
+              <th className="px-4 py-2">Duração</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
-            {assiduidadeList.map(item => (
-              <tr key={item.id} className="hover:bg-gray-50">
-                <td className="px-4 py-2 whitespace-nowrap">{item.funcionario_nome}</td>
-                <td className="px-4 py-2 whitespace-nowrap">{item.entrada}</td>
-                <td className="px-4 py-2 whitespace-nowrap">{item.saida || '-'}</td>
-                <td className="px-4 py-2 whitespace-nowrap">{item.data}</td>
-                <td className="px-4 py-2 whitespace-nowrap">{item.duracao || '-'}</td>
+          <tbody className="divide-y divide-gray-100 ">
+            {assiduidadeList.map((item) => (
+              <tr key={item.id} className="hover:bg-gray-50 mx-24">
+                <td className="px-10 py-2">{item.funcionario_nome}</td>
+                <td className="px-15 py-2">{item.entrada}</td>
+                <td className="px-10 py-2">
+                  {editingId === item.id ? (
+                    <input
+                      type="time"
+                      className="border px-2 py-1 rounded"
+                      value={editedSaida}
+                      onChange={(e) => setEditedSaida(e.target.value)}
+                      placeholder="Digite o horário de saída"
+                      title="Horário de saída"
+                    />
+                  ) : (
+                    item.saida || '-'
+                  )}
+                </td>
+                <td className="px-4 py-2">{item.data}</td>
+                <td className="px-4 py-2">{item.duracao || '-'}</td>
+                
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-    </>
-
     </div>
   );
 }
