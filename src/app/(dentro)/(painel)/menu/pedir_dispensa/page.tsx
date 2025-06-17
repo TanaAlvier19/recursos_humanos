@@ -26,12 +26,6 @@ export type Leave = {
   funcionario_nome: string;
 };
 
-function formatDate(dateString: string) {
-  const d = new Date(dateString);
-  return isNaN(d.getTime())
-    ? "—"
-    : d.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
-}
 
 export default function EmployeeLeavesPage() {
   const { accessToken } = useContext(AuthContext);
@@ -88,6 +82,22 @@ function calculateDays(start: string, end: string): number {
   if (loading) return <p>Carregando...</p>;
 
   return (
+    <><div className="block sm:hidden space-y-4">
+            <h1 className="text-2xl font-bold mb-4">Pedidos de Dispensa</h1>
+    
+          {dispensa.map(l => (
+            <div key={l.id} className="bg-white rounded shadow p-4 space-y-2">
+              <p><strong>Funcionário:</strong> {l.funcionario_nome}</p>
+              <p><strong>Motivo:</strong> {l.motivo}</p>
+              <p><strong>Período:</strong><span className="text-sm text-black-800">
+                        {calculateDays(l.inicio, l.fim)} dias
+                      </span></p>
+              <p><strong>Status:</strong> {l.status}</p>
+              <p><strong>Comentário:</strong> {l.admin_comentario || '-'}</p>
+              <p><strong>Justificativo:</strong> {l.justificativo || '-'}</p>
+            </div>
+          ))}
+        </div>
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Meus Pedidos de Dispensa</h1>
       <form onSubmit={handleSubmit} className="space-y-4 mb-6">
@@ -98,7 +108,6 @@ function calculateDays(start: string, end: string): number {
             onChange={(e) => setmotivo(e.target.value)}
             required
             className="w-full border p-2 rounded"
-            placeholder="Descreva o motivo da dispensa"
           />
         </div>
         <div className="grid grid-cols-2 gap-4">
@@ -118,7 +127,7 @@ function calculateDays(start: string, end: string): number {
         <Button type="submit">Enviar Pedido</Button>
       </form>
 
-      <Table>
+      <Table className="md:mt-8">
         <TableHeader>
           <TableRow>
             <TableHead>Motivo</TableHead>
@@ -148,6 +157,6 @@ function calculateDays(start: string, end: string): number {
           ))}
         </TableBody>
       </Table>
-    </div>
+    </div></>
   );
 }
