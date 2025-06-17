@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-
+import Swal from "sweetalert2"
 type FieldDefinition = {
   name: string;
   type: string;
@@ -73,7 +73,15 @@ export default function CreateTablePage() {
     //   setError('Nome deve começar com letra/underscore e conter apenas letras, números e underscores');
     //   return false;
     // }
-
+const customFields = fields.filter(f => !f.isSystemField);
+if (customFields.length === 0) {
+  Swal.fire({
+    icon: 'warning',
+    title: 'Campo insuficiente',
+    text: 'Adicione pelo menos um campo além do Departamento',
+  });
+  return false;
+}
     if (tableName.length > 64) {
       setError('Nome da tabela não pode exceder 64 caracteres');
       return false;
@@ -182,7 +190,6 @@ fields.forEach(item => {
           <p className="mt-2 text-sm text-gray-600">
             Defina a estrutura da sua Empresa. O campo ID é obrigatório e configurado automaticamente.
           </p>
-          <p><a href="/admin">Ir directo ao painel</a></p>
         </div>
 
         <div className="bg-white shadow rounded-lg p-6">
@@ -259,7 +266,6 @@ fields.forEach(item => {
                       className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       aria-label="Adicionar novo campo"
                       title="Adicionar novo campo à tabela"
-                      required
                     >
                       Adicionar Campo
                     </button>
