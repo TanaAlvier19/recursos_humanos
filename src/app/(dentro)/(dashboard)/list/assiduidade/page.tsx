@@ -31,18 +31,20 @@ export default function FormModalAssiduidade() {
   const [carregando, definirCarregando] = useState(false);
   const [modalAberto, definirModalAberto] = useState(false);
   const [erro, definirErro] = useState<string | null>(null);
-
+  const [hora, setHora] = useState<string>('');
   const [idEdicao, definirIdEdicao] = useState<number | null>(null);
   const [saidaEditada, definirSaidaEditada] = useState<string>('');
-
+  const [contando, setcontador] = useState(false);
   const [cameraAberta, definirCameraAberta] = useState(false);
   const [registrandoEntrada, definirRegistrandoEntrada] = useState(false);
   const [registrandoSaida, definirRegistrandoSaida] = useState(false);
+  const [contagem, setContagem] = useState<number>(0);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
+
     carregarAssiduidade();
   }, []);
 
@@ -57,31 +59,29 @@ export default function FormModalAssiduidade() {
     definirDadosFormulario(prev => ({ ...prev, [name]: value }));
   };
 
-  const registrarEntrada = async () => {
-    definirCarregando(true);
-    definirErro(null);
-    try {
-      const resposta = await fetch('https://backend-django-2-7qpl.onrender.com/api/assiduidade/todos/', {
+  const registrarEntrada = async (p0: { funcionario: any; entrada: string; data: string; }) => {
+    try{
+      const  resposta = await fetch('https://backend-django-2-7qpl.onrender.com/api/assiduidade/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dadosFormulario),
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
+        body: JSON.stringify(p0),
       });
-
-      if (!resposta.ok) {
-        const erroDados = await resposta.json();
-        throw new Error(erroDados.error || 'Erro ao registrar entrada');
-      }
-
+      if (!resposta.ok) throw new Error('Erro ao registrar entrada');
       await carregarAssiduidade();
-      definirModalAberto(false);
-      definirDadosFormulario({ funcionario: '', entrada: '', data: '' });
-    } catch (err: any) {
-      definirErro(err.message);
-    } finally {
-      definirCarregando(false);
+    }catch(erro:any){
+
     }
   };
+ useEffect(() => {
+  let intervalo: ReturnType<typeof setInterval>;
 
+  if (contando) {
+    intervalo = setInterval(() => {
+      setContagem(prev => prev + 1);
+    }, 1000);
+  }
+  return () => clearInterval(intervalo);
+}, [contando]);
   const editarSaida = async (id: number, saida: string) => {
     definirCarregando(true);
     try {
@@ -133,6 +133,7 @@ export default function FormModalAssiduidade() {
       definirErro('Erro ao acessar a câmera: ' + (err as Error).message);
     }
   };
+  
 
   const capturarImagem = (): string | null => {
     if (!videoRef.current) return null;
@@ -152,42 +153,62 @@ export default function FormModalAssiduidade() {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
+
+    setContagem(0);
+    setcontador(false);
     definirCameraAberta(false);
     definirRegistrandoEntrada(false);
     definirRegistrandoSaida(false);
   };
+  
+const reconhecerFace = async () => {
+  const imagem = capturarImagem();
+  if (!imagem) {
+    definirErro('Falha ao capturar imagem');
+    return;
+  }
 
-  const reconhecerFace = async () => {
-    const imagem = capturarImagem();
-    if (!imagem) return definirErro('Falha ao capturar imagem');
-    try {
-      const resposta = await fetch('https://8d3e-102-214-36-231.ngrok-free.app/api/facial/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: imagem }),
-      });
-      const dados = await resposta.json();
-      if (resposta.ok && dados.funcionario_id) {
-        const agora = new Date();
-        const hora = agora.toTimeString().slice(0, 5);
-        const dataAtual = agora.toISOString().split('T')[0];
+  try {
+    definirCarregando(true);
+    const resposta = await fetch('https://8d3e-102-214-36-231.ngrok-free.app/api/facial/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: imagem }),
+    });
 
-        if (registrandoSaida) {
-          await registrarSaida(dados.funcionario_id, hora);
-        } else {
-          definirDadosFormulario({ funcionario: dados.funcionario_id.toString(), entrada: hora, data: dataAtual });
-        }
+    const dados = await resposta.json();
 
-        fecharCamera();
-      } else {
-        definirErro(dados.error || 'Funcionário não reconhecido');
-      }
-    } catch (err) {
-      definirErro('Erro no reconhecimento facial: ' + (err as Error).message);
+    if (!resposta.ok || !dados.funcionario_id) {
+      throw new Error(dados.error || 'Funcionário não reconhecido');
     }
-  };
 
-  const registrarSaida = async (funcionarioId: number, horaSaida: string) => {
+    const agora = new Date();
+    const hora = agora.toTimeString().slice(0, 5);
+    const dataAtual = agora.toISOString().split('T')[0];
+
+    if (registrandoSaida) {
+      await registrarSaida(dados.funcionario_id, hora);
+    } else {
+      await registrarEntrada({ funcionario: dados.funcionario_id.toString(), entrada: hora, data: dataAtual });
+      Swal.fire('Sucesso', 'Entrada registrada com sucesso!', 'success');
+    }
+
+    await carregarAssiduidade();
+    definirModalAberto(false);
+    definirDadosFormulario({ funcionario: '', entrada: '', data: '' });
+
+  } catch (err: any) {
+    definirErro('Erro: ' + err.message);
+    Swal.fire('Erro', err.message, 'error');
+  } finally {
+    fecharCamera();
+   
+    definirCarregando(false);
+  }
+};
+
+
+  async function registrarSaida(funcionarioId: number, horaSaida: string) {
     try {
       const existente = listaAssiduidade.find(item => item.funcionario.toString() === funcionarioId.toString() && item.saida === null);
       if (existente) {
@@ -201,15 +222,17 @@ export default function FormModalAssiduidade() {
           body: JSON.stringify({ funcionario: funcionarioId, entrada: '00:00', saida: horaSaida, data: dataAtual }),
         });
         if (!resposta.ok) {
-          const erroDados = await resposta.json();
-          throw new Error(erroDados.error || 'Erro ao registrar saída');
+          Swal.fire('Ops..', 'Tente Novamente ou verifique se o serviço está ativo!', 'error');
+        }
+        if (resposta.ok) {
+          Swal.fire('Sucesso', 'Saida registrada com sucesso!', 'success');
         }
         await carregarAssiduidade();
       }
     } catch (err: any) {
       definirErro(err.message);
     }
-  };
+  }
 
   const abrirModalEntrada = async () => {
     definirRegistrandoEntrada(true);
@@ -230,8 +253,11 @@ export default function FormModalAssiduidade() {
 
   return (
     <div className="mx-auto max-w-5xl p-6 space-y-6">
+      <input type="time" value={hora} onChange={e=>setHora(e.target.value)} />
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Gestão de Assiduidade</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-yellow-800">Os registro de assiduidades serão apagados depois de 20h e será gerado um relatório.</h1>
+
         <button onClick={exportarPDF} className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300 min-h-[48px]">
           <FileText className="w-5 h-5" />
           Exportar PDF
@@ -294,10 +320,10 @@ export default function FormModalAssiduidade() {
             <h2 className="text-xl font-semibold text-gray-800">Nova Entrada</h2>
             <video ref={videoRef} autoPlay playsInline className="w-full h-auto border rounded" />
             <div className="flex gap-2">
-              <button onClick={reconhecerFace} className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded">Reconhecer</button>
-              <button onClick={fecharCamera} className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded">Cancelar</button>
+              <button onClick={() =>{ reconhecerFace(); setcontador(true);}} className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded">Reconhecer</button>
+              <button onClick={fecharCamera}  className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded">Cancelar</button>
             </div>
-            {erro && <p className="text-red-600 text-sm">{erro}</p>}
+            {contando && <p className="text-green-600 text-sm">{contagem}</p>}
           </div>
         </div>
       )}
@@ -308,10 +334,10 @@ export default function FormModalAssiduidade() {
             <h2 className="text-xl font-semibold text-gray-800">Registrar Saída</h2>
             <video ref={videoRef} autoPlay playsInline className="w-full h-auto border rounded" />
             <div className="flex gap-2">
-              <button onClick={reconhecerFace} className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded">Reconhecer</button>
+              <button onClick={() =>{ reconhecerFace(); setcontador(true);}} className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded">Reconhecer</button>
               <button onClick={fecharCamera} className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded">Cancelar</button>
             </div>
-            {erro && <p className="text-red-600 text-sm">{erro}</p>}
+            {contando && <p className="text-green-600 text-sm">{contagem}</p>}
           </div>
         </div>
       )}
