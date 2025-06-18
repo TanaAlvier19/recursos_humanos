@@ -75,7 +75,7 @@ function calculateDays(start: string, end: string): number {
     body.append("justificativo", file);
     Swal.close();
     }
-    const res = await fetch("https://3d63-102-214-36-178.ngrok-free.app/api/dispensa/create/", {
+    const res = await fetch("https://3b63-102-214-36-178.ngrok-free.app/api/dispensa/create/", {
       method: "POST",
       headers: { Authorization: `Bearer ${accessToken}` },
       body,
