@@ -133,8 +133,7 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
                 <TableCell>{l.admin_comentario || '—'}</TableCell>
                 <TableCell>
                   {l.justificativo ? (
-                             <a  href={`https://8d3e-102-214-36-231.ngrok-free.app/api/media/justificativo/${l.justificativo?.split('/').pop()}`} target="_blank" rel="noopener noreferrer">Ver PDF</a>
-                    
+                     <a  href={`https://8d3e-102-214-36-231.ngrok-free.app/api/media/justificativo/${l.justificativo?.split('/').pop()}`} target="_blank" rel="noopener noreferrer">Ver PDF</a>
                   ) : "—"}
                 </TableCell>
                 <TableCell className="flex gap-2">
