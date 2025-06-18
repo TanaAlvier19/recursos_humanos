@@ -154,6 +154,7 @@ export default function FormModalAssiduidade() {
       streamRef.current = null;
     }
 
+    setContagem(0);
     setcontador(false);
     definirCameraAberta(false);
     definirRegistrandoEntrada(false);
@@ -189,14 +190,7 @@ const reconhecerFace = async () => {
       await registrarSaida(dados.funcionario_id, hora);
     } else {
       await registrarEntrada({ funcionario: dados.funcionario_id.toString(), entrada: hora, data: dataAtual });
-
-      const [h, m] = hora.split(':').map(Number);
-      const horaCalculada = h + m / 60;
-      if (horaCalculada < 10) {
-        Swal.fire('Atrasado', 'Você está atrasado!', 'warning');
-      } else {
-        Swal.fire('Sucesso', 'Entrada registrada com sucesso!', 'success');
-      }
+      Swal.fire('Sucesso', 'Entrada registrada com sucesso!', 'success');
     }
 
     await carregarAssiduidade();
@@ -208,8 +202,7 @@ const reconhecerFace = async () => {
     Swal.fire('Erro', err.message, 'error');
   } finally {
     fecharCamera();
-    setContagem(0);
-    setcontador(true);
+   
     definirCarregando(false);
   }
 };
@@ -327,8 +320,8 @@ const reconhecerFace = async () => {
             <h2 className="text-xl font-semibold text-gray-800">Nova Entrada</h2>
             <video ref={videoRef} autoPlay playsInline className="w-full h-auto border rounded" />
             <div className="flex gap-2">
-              <button onClick={reconhecerFace} className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded">Reconhecer</button>
-              <button onClick={fecharCamera} className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded">Cancelar</button>
+              <button onClick={() =>{ reconhecerFace(); setcontador(true);}} className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded">Reconhecer</button>
+              <button onClick={fecharCamera}  className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded">Cancelar</button>
             </div>
             {contando && <p className="text-green-600 text-sm">{contagem}</p>}
           </div>
@@ -341,7 +334,7 @@ const reconhecerFace = async () => {
             <h2 className="text-xl font-semibold text-gray-800">Registrar Saída</h2>
             <video ref={videoRef} autoPlay playsInline className="w-full h-auto border rounded" />
             <div className="flex gap-2">
-              <button onClick={reconhecerFace} className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded">Reconhecer</button>
+              <button onClick={() =>{ reconhecerFace(); setcontador(true);}} className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded">Reconhecer</button>
               <button onClick={fecharCamera} className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded">Cancelar</button>
             </div>
             {contando && <p className="text-green-600 text-sm">{contagem}</p>}
