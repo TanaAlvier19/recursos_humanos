@@ -153,73 +153,69 @@ export default function FormModalAssiduidade() {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
+
+    setcontador(false);
     definirCameraAberta(false);
     definirRegistrandoEntrada(false);
     definirRegistrandoSaida(false);
   };
   
-  const reconhecerFace = async () => {
-    
-    const imagem = capturarImagem();
-    if (!imagem) return definirErro('Falha ao capturar imagem');
-    try {
-      const resposta = await fetch('https://8d3e-102-214-36-231.ngrok-free.app/api/facial/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: imagem }),
-      });
-      const dados = await resposta.json();
-      if (resposta.ok && dados.funcionario_id) {
-        const agora = new Date();
-        const hora = agora.toTimeString().slice(0, 5);
-        const dataAtual = agora.toISOString().split('T')[0];
+const reconhecerFace = async () => {
+  const imagem = capturarImagem();
+  if (!imagem) {
+    definirErro('Falha ao capturar imagem');
+    return;
+  }
 
-        if (registrandoSaida) {
-          await registrarSaida(dados.funcionario_id, hora);
-        } else {
-          await registrarEntrada({ funcionario: dados.funcionario_id.toString(), entrada: hora, data: dataAtual });
-        }
-
-        fecharCamera();
-      } else {
-        definirErro(dados.error || 'Funcionário não reconhecido');
-      }
-    } catch (err) {
-      definirErro('Erro no reconhecimento facial: ' + (err as Error).message);
-    }
-    const [h, m] = hora.split(':').map(Number);
-    const horaCalculada = h + m / 60;
-    if (horaCalculada < 10) {
-      Swal.fire('Atrasado', 'Você está atrasado!', 'warning');
-    }
+  try {
     definirCarregando(true);
-    definirErro(null);
-    setContagem(0);
-    setcontador(true)
-    try {
-      const resposta = await fetch('https://backend-django-2-7qpl.onrender.com/api/assiduidade/todos/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ funcionario: dadosFormulario.funcionario, entrada: dadosFormulario.entrada, data: dadosFormulario.data }),
-      });
+    const resposta = await fetch('https://8d3e-102-214-36-231.ngrok-free.app/api/facial/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: imagem }),
+    });
 
-      if (!resposta.ok) {
-        Swal.fire('Ops..', 'Tente Novamente ou verifique se o serviço está ativo!', 'error');
-      }
-      if (resposta.ok) {
+    const dados = await resposta.json();
+
+    if (!resposta.ok || !dados.funcionario_id) {
+      throw new Error(dados.error || 'Funcionário não reconhecido');
+    }
+
+    const agora = new Date();
+    const hora = agora.toTimeString().slice(0, 5);
+    const dataAtual = agora.toISOString().split('T')[0];
+
+    if (registrandoSaida) {
+      await registrarSaida(dados.funcionario_id, hora);
+    } else {
+      await registrarEntrada({ funcionario: dados.funcionario_id.toString(), entrada: hora, data: dataAtual });
+
+      const [h, m] = hora.split(':').map(Number);
+      const horaCalculada = h + m / 60;
+      if (horaCalculada < 10) {
+        Swal.fire('Atrasado', 'Você está atrasado!', 'warning');
+      } else {
         Swal.fire('Sucesso', 'Entrada registrada com sucesso!', 'success');
       }
-      await carregarAssiduidade();
-      definirModalAberto(false);
-      definirDadosFormulario({ funcionario: '', entrada: '', data: '' });
-    } catch (err: any) {
-      definirErro(err.message);
-    } finally {
-      definirCarregando(false);
     }
-  };
 
-  const registrarSaida = async (funcionarioId: number, horaSaida: string) => {
+    await carregarAssiduidade();
+    definirModalAberto(false);
+    definirDadosFormulario({ funcionario: '', entrada: '', data: '' });
+
+  } catch (err: any) {
+    definirErro('Erro: ' + err.message);
+    Swal.fire('Erro', err.message, 'error');
+  } finally {
+    fecharCamera();
+    setContagem(0);
+    setcontador(true);
+    definirCarregando(false);
+  }
+};
+
+
+  async function registrarSaida(funcionarioId: number, horaSaida: string) {
     try {
       const existente = listaAssiduidade.find(item => item.funcionario.toString() === funcionarioId.toString() && item.saida === null);
       if (existente) {
@@ -233,17 +229,17 @@ export default function FormModalAssiduidade() {
           body: JSON.stringify({ funcionario: funcionarioId, entrada: '00:00', saida: horaSaida, data: dataAtual }),
         });
         if (!resposta.ok) {
-        Swal.fire('Ops..', 'Tente Novamente ou verifique se o serviço está ativo!', 'error');
-      }
-      if (resposta.ok) {
-        Swal.fire('Sucesso', 'Saida registrada com sucesso!', 'success');
-      }
+          Swal.fire('Ops..', 'Tente Novamente ou verifique se o serviço está ativo!', 'error');
+        }
+        if (resposta.ok) {
+          Swal.fire('Sucesso', 'Saida registrada com sucesso!', 'success');
+        }
         await carregarAssiduidade();
       }
     } catch (err: any) {
       definirErro(err.message);
     }
-  };
+  }
 
   const abrirModalEntrada = async () => {
     definirRegistrandoEntrada(true);
@@ -267,6 +263,8 @@ export default function FormModalAssiduidade() {
       <input type="time" value={hora} onChange={e=>setHora(e.target.value)} />
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Gestão de Assiduidade</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-yellow-800">Os registro de assiduidades serão apagados depois de 20h e será gerado um relatório.</h1>
+
         <button onClick={exportarPDF} className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300 min-h-[48px]">
           <FileText className="w-5 h-5" />
           Exportar PDF
