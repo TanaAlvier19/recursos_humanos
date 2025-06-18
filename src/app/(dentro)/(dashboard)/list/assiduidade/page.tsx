@@ -34,17 +34,17 @@ export default function FormModalAssiduidade() {
   const [hora, setHora] = useState<string>('');
   const [idEdicao, definirIdEdicao] = useState<number | null>(null);
   const [saidaEditada, definirSaidaEditada] = useState<string>('');
-
+  const [contando, setcontador] = useState(false);
   const [cameraAberta, definirCameraAberta] = useState(false);
   const [registrandoEntrada, definirRegistrandoEntrada] = useState(false);
   const [registrandoSaida, definirRegistrandoSaida] = useState(false);
+  const [contagem, setContagem] = useState<number>(0);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
 
-    definirAtraso(hora);
     carregarAssiduidade();
   }, []);
 
@@ -72,7 +72,16 @@ export default function FormModalAssiduidade() {
 
     }
   };
+ useEffect(() => {
+  let intervalo: ReturnType<typeof setInterval>;
 
+  if (contando) {
+    intervalo = setInterval(() => {
+      setContagem(prev => prev + 1);
+    }, 1000);
+  }
+  return () => clearInterval(intervalo);
+}, [contando]);
   const editarSaida = async (id: number, saida: string) => {
     definirCarregando(true);
     try {
@@ -124,14 +133,7 @@ export default function FormModalAssiduidade() {
       definirErro('Erro ao acessar a câmera: ' + (err as Error).message);
     }
   };
-  const definirAtraso = (hora: string) => {
-    const agora = new Date();
-    const [h, m] = hora.split(':').map(Number);
-    const horaCalculada = h + m / 60;
-    if (horaCalculada < 10) {
-      Swal.fire('Atrasado', 'Você está atrasado!', 'warning');
-    }
-  };
+  
 
   const capturarImagem = (): string | null => {
     if (!videoRef.current) return null;
@@ -185,8 +187,15 @@ export default function FormModalAssiduidade() {
     } catch (err) {
       definirErro('Erro no reconhecimento facial: ' + (err as Error).message);
     }
+    const [h, m] = hora.split(':').map(Number);
+    const horaCalculada = h + m / 60;
+    if (horaCalculada < 10) {
+      Swal.fire('Atrasado', 'Você está atrasado!', 'warning');
+    }
     definirCarregando(true);
     definirErro(null);
+    setContagem(0);
+    setcontador(true)
     try {
       const resposta = await fetch('https://backend-django-2-7qpl.onrender.com/api/assiduidade/todos/', {
         method: 'POST',
@@ -195,10 +204,11 @@ export default function FormModalAssiduidade() {
       });
 
       if (!resposta.ok) {
-        const erroDados = await resposta.json();
-        throw new Error(erroDados.error || 'Erro ao registrar entrada');
+        Swal.fire('Ops..', 'Tente Novamente ou verifique se o serviço está ativo!', 'error');
       }
-
+      if (resposta.ok) {
+        Swal.fire('Sucesso', 'Entrada registrada com sucesso!', 'success');
+      }
       await carregarAssiduidade();
       definirModalAberto(false);
       definirDadosFormulario({ funcionario: '', entrada: '', data: '' });
@@ -223,9 +233,11 @@ export default function FormModalAssiduidade() {
           body: JSON.stringify({ funcionario: funcionarioId, entrada: '00:00', saida: horaSaida, data: dataAtual }),
         });
         if (!resposta.ok) {
-          const erroDados = await resposta.json();
-          throw new Error(erroDados.error || 'Erro ao registrar saída');
-        }
+        Swal.fire('Ops..', 'Tente Novamente ou verifique se o serviço está ativo!', 'error');
+      }
+      if (resposta.ok) {
+        Swal.fire('Sucesso', 'Saida registrada com sucesso!', 'success');
+      }
         await carregarAssiduidade();
       }
     } catch (err: any) {
@@ -320,7 +332,7 @@ export default function FormModalAssiduidade() {
               <button onClick={reconhecerFace} className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded">Reconhecer</button>
               <button onClick={fecharCamera} className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded">Cancelar</button>
             </div>
-            {erro && <p className="text-red-600 text-sm">{erro}</p>}
+            {contando && <p className="text-green-600 text-sm">{contagem}</p>}
           </div>
         </div>
       )}
@@ -334,7 +346,7 @@ export default function FormModalAssiduidade() {
               <button onClick={reconhecerFace} className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded">Reconhecer</button>
               <button onClick={fecharCamera} className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded">Cancelar</button>
             </div>
-            {erro && <p className="text-red-600 text-sm">{erro}</p>}
+            {contando && <p className="text-green-600 text-sm">{contagem}</p>}
           </div>
         </div>
       )}
