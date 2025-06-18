@@ -70,9 +70,12 @@ function calculateDays(start: string, end: string): number {
     body.append("motivo", motivo);
     body.append("inicio", inicio);
     body.append("fim", fim);
-    if (file) body.append("justificativo", file);
-
-    const res = await fetch("https://backend-django-2-7qpl.onrender.com/api/dispensa/create/", {
+    if (file) {
+    Swal.fire({ title: 'Carregando PDF...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    body.append("justificativo", file);
+    Swal.close();
+    }
+    const res = await fetch("https://8d3e-102-214-36-231.ngrok-free.app/api/dispensa/create/", {
       method: "POST",
       headers: { Authorization: `Bearer ${accessToken}` },
       body,
@@ -112,7 +115,7 @@ function calculateDays(start: string, end: string): number {
         </div>
         <div>
           <label>Justificativa (PDF)</label>
-          <Input type="file" required accept="application/pdf" onChange={handleFileChange} />
+          <Input type="file" accept="application/pdf" onChange={handleFileChange} />
         </div>
         <Button type="submit">Enviar Pedido</Button>
       </form>
@@ -139,7 +142,7 @@ function calculateDays(start: string, end: string): number {
               <TableCell>{l.admin_comentario || "—"}</TableCell>
               <TableCell>
                 {l.justificativo ? (
-                  <a href={l.justificativo} target="_blank">Ver PDF</a>
+                  <a  href={`https://8d3e-102-214-36-231.ngrok-free.app/api/media/justificativo/${l.justificativo?.split('/').pop()}`} target="_blank" rel="noopener noreferrer">Ver PDF</a>
                 ) : "—"}
               </TableCell>
               <TableCell>{l.funcionario_nome}</TableCell>
