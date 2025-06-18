@@ -62,28 +62,61 @@ function calculateDays(start: string, end: string): number {
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; 
   return isNaN(diffDays) ? 0 : diffDays;
 }
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!accessToken) return Swal.fire("Erro", "Faça login primeiro", "error");
+ const handleSubmit = async (e: FormEvent) => {
+  e.preventDefault();
+  if (!accessToken) return Swal.fire("Erro", "Faça login primeiro", "error");
 
-    const body = new FormData();
-    body.append("motivo", motivo);
-    body.append("inicio", inicio);
-    body.append("fim", fim);
-    if (file) body.append("justificativo", file);
+  let justificativoUrl = null;
 
-    const res = await fetch("https://backend-django-2-7qpl.onrender.com/api/dispensa/create/", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${accessToken}` },
-      body,
-    });
+  if (file) {
+    Swal.fire({ title: 'Carregando PDF...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    justificativoUrl = await uploaddopdf(file);
+    Swal.close();
 
-    if (!res.ok) return Swal.fire("Erro", "Falha ao enviar pedido", "error");
-    const json = await res.json();
-    setdispensa((prev) => [json, ...prev]);
-    setmotivo(""); setinicio(""); setfim(""); setFile(null);
-    Swal.fire("Sucesso", "Pedido enviado!", "success");
-  };
+    if (!justificativoUrl) {
+      return Swal.fire("Erro", "Falha ao enviar o PDF", "error");
+    }
+  }
+
+  const body = new FormData();
+  body.append("motivo", motivo);
+  body.append("inicio", inicio);
+  body.append("fim", fim);
+  if (justificativoUrl) body.append("justificativo", justificativoUrl);
+
+  const res = await fetch("https://backend-django-2-7qpl.onrender.com/api/dispensa/create/", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body,
+  });
+
+  if (!res.ok) return Swal.fire("Erro", "Falha ao enviar pedido", "error");
+
+  const json = await res.json();
+  setdispensa((prev) => [json, ...prev]);
+  setmotivo(""); setinicio(""); setfim(""); setFile(null);
+  Swal.fire("Sucesso", "Pedido enviado!", "success");
+};
+const uploaddopdf = async (pdfFile: File): Promise<string | null> => {
+  const formData = new FormData();
+  formData.append('file', pdfFile);
+  formData.append('upload_preset', 'mizl9spo');
+  formData.append('folder', 'samples/ecommerce');
+
+  const res = await fetch('https://api.cloudinary.com/v1_1/mizl9spo/raw/upload', {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!res.ok) {
+    console.error('Erro ao enviar PDF para Cloudinary');
+    return null;
+  }
+
+  const data = await res.json();
+  return data.secure_url;
+};
+
 
   if (loading) return <p>Carregando...</p>;
 
@@ -112,7 +145,7 @@ function calculateDays(start: string, end: string): number {
         </div>
         <div>
           <label>Justificativa (PDF)</label>
-          <Input type="file" required accept="application/pdf" onChange={handleFileChange} />
+          <Input type="file" accept="application/pdf" onChange={handleFileChange} />
         </div>
         <Button type="submit">Enviar Pedido</Button>
       </form>
@@ -139,7 +172,7 @@ function calculateDays(start: string, end: string): number {
               <TableCell>{l.admin_comentario || "—"}</TableCell>
               <TableCell>
                 {l.justificativo ? (
-                  <a href={l.justificativo} target="_blank">Ver PDF</a>
+                  <a href={l.justificativo} target="_blank" rel="noopener noreferrer">Ver PDF</a>
                 ) : "—"}
               </TableCell>
               <TableCell>{l.funcionario_nome}</TableCell>
