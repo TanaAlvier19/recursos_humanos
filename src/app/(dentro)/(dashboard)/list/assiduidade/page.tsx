@@ -31,7 +31,7 @@ export default function FormModalAssiduidade() {
   const [carregando, definirCarregando] = useState(false);
   const [modalAberto, definirModalAberto] = useState(false);
   const [erro, definirErro] = useState<string | null>(null);
-
+  const [hora, setHora] = useState<string>('');
   const [idEdicao, definirIdEdicao] = useState<number | null>(null);
   const [saidaEditada, definirSaidaEditada] = useState<string>('');
 
@@ -43,6 +43,8 @@ export default function FormModalAssiduidade() {
   const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
+
+    definirAtraso(hora);
     carregarAssiduidade();
   }, []);
 
@@ -57,8 +59,18 @@ export default function FormModalAssiduidade() {
     definirDadosFormulario(prev => ({ ...prev, [name]: value }));
   };
 
-  const registrarEntrada = async () => {
-    
+  const registrarEntrada = async (p0: { funcionario: any; entrada: string; data: string; }) => {
+    try{
+      const  resposta = await fetch('https://backend-django-2-7qpl.onrender.com/api/assiduidade/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
+        body: JSON.stringify(p0),
+      });
+      if (!resposta.ok) throw new Error('Erro ao registrar entrada');
+      await carregarAssiduidade();
+    }catch(erro:any){
+
+    }
   };
 
   const editarSaida = async (id: number, saida: string) => {
@@ -112,6 +124,14 @@ export default function FormModalAssiduidade() {
       definirErro('Erro ao acessar a câmera: ' + (err as Error).message);
     }
   };
+  const definirAtraso = (hora: string) => {
+    const agora = new Date();
+    const [h, m] = hora.split(':').map(Number);
+    const horaCalculada = h + m / 60;
+    if (horaCalculada < 10) {
+      Swal.fire('Atrasado', 'Você está atrasado!', 'warning');
+    }
+  };
 
   const capturarImagem = (): string | null => {
     if (!videoRef.current) return null;
@@ -135,7 +155,7 @@ export default function FormModalAssiduidade() {
     definirRegistrandoEntrada(false);
     definirRegistrandoSaida(false);
   };
-
+  
   const reconhecerFace = async () => {
     
     const imagem = capturarImagem();
@@ -155,7 +175,7 @@ export default function FormModalAssiduidade() {
         if (registrandoSaida) {
           await registrarSaida(dados.funcionario_id, hora);
         } else {
-          definirDadosFormulario({ funcionario: dados.funcionario_id.toString(), entrada: hora, data: dataAtual });
+          await registrarEntrada({ funcionario: dados.funcionario_id.toString(), entrada: hora, data: dataAtual });
         }
 
         fecharCamera();
@@ -232,6 +252,7 @@ export default function FormModalAssiduidade() {
 
   return (
     <div className="mx-auto max-w-5xl p-6 space-y-6">
+      <input type="time" value={hora} onChange={e=>setHora(e.target.value)} />
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Gestão de Assiduidade</h1>
         <button onClick={exportarPDF} className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300 min-h-[48px]">
