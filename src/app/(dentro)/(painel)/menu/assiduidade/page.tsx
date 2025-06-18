@@ -98,10 +98,10 @@ if (!imageData) {
 
 try {
   const formData = new FormData();
-  const blob = await (await fetch(imageData)).blob(); // converte base64 para blob
+  const blob = await (await fetch(imageData)).blob(); 
   formData.append("image", blob, "face.jpg");
 
-  const response = await fetch('https://backend-django-2-7qpl.onrender.com/api/register_face/', {
+  const response = await fetch('https://8d3e-102-214-36-231.ngrok-free.app/api/register_face/', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`,
