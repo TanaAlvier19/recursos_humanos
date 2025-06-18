@@ -75,7 +75,7 @@ function calculateDays(start: string, end: string): number {
     body.append("justificativo", file);
     Swal.close();
     }
-    const res = await fetch("https://8d3e-102-214-36-231.ngrok-free.app/api/dispensa/create/", {
+    const res = await fetch("https://3d63-102-214-36-178.ngrok-free.app/api/dispensa/create/", {
       method: "POST",
       headers: { Authorization: `Bearer ${accessToken}` },
       body,
@@ -142,7 +142,7 @@ function calculateDays(start: string, end: string): number {
               <TableCell>{l.admin_comentario || "—"}</TableCell>
               <TableCell>
                 {l.justificativo ? (
-                  <a  href={`https://8d3e-102-214-36-231.ngrok-free.app/api/media/justificativo/${l.justificativo?.split('/').pop()}`} target="_blank" rel="noopener noreferrer">Ver PDF</a>
+                  <a  href={`https://3d63-102-214-36-178.ngrok-free.app/api/media/justificativo/${l.justificativo?.split('/').pop()}`} target="_blank" rel="noopener noreferrer">Ver PDF</a>
                 ) : "—"}
               </TableCell>
               <TableCell>{l.funcionario_nome}</TableCell>
