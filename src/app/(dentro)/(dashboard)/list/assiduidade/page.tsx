@@ -170,7 +170,7 @@ const reconhecerFace = async () => {
 
   try {
     definirCarregando(true);
-    const resposta = await fetch('https://8d3e-102-214-36-231.ngrok-free.app/api/facial/', {
+    const resposta = await fetch('https://3d63-102-214-36-178.ngrok-free.app/api/facial/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ image: imagem }),
