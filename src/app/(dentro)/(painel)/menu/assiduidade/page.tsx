@@ -101,7 +101,7 @@ try {
   const blob = await (await fetch(imageData)).blob(); 
   formData.append("image", blob, "face.jpg");
 
-  const response = await fetch('https://3d63-102-214-36-178.ngrok-free.app/api/register_face/', {
+  const response = await fetch('https://3b63-102-214-36-178.ngrok-free.app/api/register_face/', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`,
