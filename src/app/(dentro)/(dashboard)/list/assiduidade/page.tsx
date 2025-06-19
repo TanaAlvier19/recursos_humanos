@@ -45,9 +45,10 @@ export default function FormModalAssiduidade() {
   const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
-
+  if (accessToken) {
     carregarAssiduidade();
-  }, []);
+  }
+}, [accessToken])
 
   const carregarAssiduidade = async () => {
     const resposta = await fetch('https://backend-django-2-7qpl.onrender.com/api/assiduidade/todos/');
@@ -55,17 +56,7 @@ export default function FormModalAssiduidade() {
     definirListaAssiduidade(dados);
     setLoading(false);
   };
-  useEffect(() => {
-      if (loading) {
-        Swal.fire({
-          title: 'Carregando As Assiduidades...',
-          allowOutsideClick: false,
-          didOpen: () => Swal.showLoading()
-        });
-      } else {
-        Swal.close();
-      }
-    }, [loading]);
+
   const aoMudarInput = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     definirDadosFormulario(prev => ({ ...prev, [name]: value }));
@@ -298,7 +289,7 @@ const reconhecerFace = async () => {
       <input type="time" value={hora} onChange={e=>setHora(e.target.value)} />
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Gestão de Assiduidade</h1>
-        <h1 className="text-2xl sm:text-3xl font-bold text-yellow-800">Os registro de assiduidades serão apagados depois de 20h e será gerado um relatório.</h1>
+        <h1 className="text-1xl sm:text-1xl font-bold text-yellow-800">Os registro de assiduidades serão apagados depois de 20h e será gerado um relatório.</h1>
 
         <button onClick={exportarPDF} className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300 min-h-[48px]">
           <FileText className="w-5 h-5" />
