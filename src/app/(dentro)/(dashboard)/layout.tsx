@@ -22,7 +22,7 @@ export default function DashboardLayout({
           </div>
         )}
       <div className="flex-1 flex flex-col bg-gray-50 overflow-auto">
-        <Navbar clicadoMenu={() => setabrirMenu(!abrirMenu)} />
+        <Navbar clicadoMenuAction={() => setabrirMenu(!abrirMenu)} />
         
         <main className="flex-1 p-4 overflow-auto">
           {children}
