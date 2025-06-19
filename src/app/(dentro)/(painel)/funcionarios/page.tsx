@@ -4,6 +4,7 @@ import { useEffect, useState, useContext } from 'react';
 import { Chart, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import { AuthContext } from "@/app/context/AuthContext";
+import { useRouter } from 'next/navigation';
 Chart.register(ArcElement, Tooltip, Legend);
 export type Leave = {
   id: number;
@@ -26,7 +27,7 @@ const FuncionarioDashboard = () => {
   const [dispensa, setdispensa] = useState(0);
   const [totalPresencas, setTotalPresencas] = useState(0);
   const [departamentos, setDepartamentos] = useState([]);
-
+   const router = useRouter()
  useEffect(() => {
      fetch('https://backend-django-2-7qpl.onrender.com/api/dispensa/my/', {
       headers: { Authorization: `Bearer ${accessToken}` },
@@ -45,7 +46,11 @@ const FuncionarioDashboard = () => {
        .catch(err => console.error(err))
    }, [accessToken])
   
-  
+   useEffect(() => {
+    if (!accessToken) {
+      router.push('/logincomsenha') 
+    }
+  }, [accessToken, router])
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 space-y-8">
