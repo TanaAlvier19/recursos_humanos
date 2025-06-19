@@ -1,14 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { AuthContext } from '@/app/context/AuthContext';
 import Swal from 'sweetalert2'
 export default function LoginComSenha() {
   const router = useRouter();
   const [email, setEmail] = useState('');
+  const {
+    setAccessToken,
+    setUserId,
+    setUserName
+  } = useContext(AuthContext);
   const [senha, setSenha] = useState('');
   const [carregando, setCarregando] = useState(false);
 
@@ -38,6 +44,9 @@ export default function LoginComSenha() {
       });
 
       const user = await userRes.json();
+      setAccessToken(data.access);   
+      setUserId(user.id);            
+      setUserName(user.nome);
       console.log("Dados do usuário logado:", user);
       if (!userRes.ok) throw new Error('Erro ao obter dados do usuário');
 
