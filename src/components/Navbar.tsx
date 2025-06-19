@@ -6,11 +6,11 @@ import React, { useState, useContext } from 'react';
 import { AuthContext } from '@/app/context/AuthContext';
 import { Menu } from "lucide-react";
 type Props = {
-  clicadoMenu: () => void;
+  clicadoMenuAction: () => void;
 };
-export default function Navbar ({clicadoMenu}:Props) {
+export default function Navbar ({clicadoMenuAction}:Props) {
   const router = useRouter();
-  const { userName } = useContext(AuthContext);
+  const { userName, userLoading } = useContext(AuthContext);
   const [abrirMenu, setabrirMenu]=useState(false)
  
   console.log(abrirMenu)
@@ -21,9 +21,8 @@ export default function Navbar ({clicadoMenu}:Props) {
   return (
     <header className="w-full bg-white shadow-md">
       <div className="container mx-auto h-16 flex items-center justify-between px-4">
-        <button  onClick={clicadoMenu} className="flex items-center md:hidden text-gray-700 hover:text-blue-600" title="Abrir menu">
-        <Menu className="w-5 h-5 mr-2" aria-hidden="true" />
-        <span className="sr-only">Abrir menu</span>
+      <button  onClick={clicadoMenuAction} className="flex items-center md:hidden text-gray-700 hover:text-blue-600">
+      <Menu className="w-5 h-5 mr-2" />
       </button>
         <Link href="/" className="flex items-center gap-2">
         <Image src="/Onono.png" alt="logo" width={150} height={180} />
@@ -42,11 +41,7 @@ export default function Navbar ({clicadoMenu}:Props) {
           <div className="absolute top-16 left-0 w-full bg-white shadow-lg z-10">
             <ul className="flex flex-col items-start p-4 space-y-2">
               <li>
-
-                <Link href="/logincomsenha" className="text-gray-700 hover:text-indigo-600">Perfil</Link>
-
                 <Link href="/perfil" className="text-gray-700 hover:text-indigo-600">Perfil</Link>
-
               </li>
               <li>
                 <Link href="/personaliza" className="text-gray-700 hover:text-indigo-600">Configurações</Link>
@@ -59,10 +54,7 @@ export default function Navbar ({clicadoMenu}:Props) {
         ):null}
         <nav className="flex items-center space-x-4">
 
-          <button
-            className="relative p-2 bg-white rounded-full hover:bg-gray-100 transition"
-            title="Mensagens"
-          >
+          <button className="relative p-2 bg-white rounded-full hover:bg-gray-100 transition">
             <Image src="/message.png" alt="Mensagens" width={20} height={20} />
           </button>
 
@@ -82,7 +74,7 @@ export default function Navbar ({clicadoMenu}:Props) {
 
           <div className="flex items-center gap-2 cursor-pointer group relative">
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-800">{userName || 'Usuário'}</p>
+              <p className="text-sm font-medium text-gray-800">{userLoading ? 'Carregando...' : userName || 'Usuário'}</p>
               <p className="text-xs text-gray-500">EU</p>
             </div>
             <Image
@@ -97,9 +89,7 @@ export default function Navbar ({clicadoMenu}:Props) {
               <ul className="py-2">
                 <li>
                   <Link
-
-                    href="/logincomsenha"
-
+                    href="/perfil"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     Perfil
@@ -132,3 +122,4 @@ export default function Navbar ({clicadoMenu}:Props) {
     </header>
   );
 };
+
