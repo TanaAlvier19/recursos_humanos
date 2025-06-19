@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
-
+import { useEffect, useState, useContext } from 'react';
+import { AuthContext } from '@/app/context/AuthContext';
+import {useRouter} from 'next/navigation'
 const AdminDashboard = () => {
+  const { accessToken } = useContext(AuthContext);
+    const router=useRouter()
   const [funcionarios, setFuncionarios] = useState([]);
   const [ativos, setAtivos] = useState(0);
   const [inativos, setInativos] = useState(0);
@@ -11,7 +13,11 @@ const AdminDashboard = () => {
   const [totalFaltas, setTotalFaltas] = useState(0);
   const [totalPresencas, setTotalPresencas] = useState(0);
   const [departamentos, setDepartamentos] = useState([]);
-
+useEffect(() => {
+    if (!accessToken) {
+      router.push('/login') // redireciona para a página de login
+    }
+  }, [accessToken, router])
  useEffect(() => {
      fetch('https://backend-django-2-7qpl.onrender.com/api/leaves/all/')
        .then(res => res.json())
@@ -20,6 +26,7 @@ const AdminDashboard = () => {
          setTotalDispensas(dispensas.length)})
        .catch(err => console.error(err))
    }, [])
+  if (!accessToken) return null
   
   
 
