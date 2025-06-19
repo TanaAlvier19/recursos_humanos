@@ -1,10 +1,8 @@
 'use client';
-
 import { useEffect, useState, useRef, useContext } from 'react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import Swal from 'sweetalert2';
 import { AuthContext } from '@/app/context/AuthContext';
+import { useRouter } from 'next/navigation';
 interface Assiduidade {
   id: number;
   funcionario: number;
@@ -16,6 +14,7 @@ interface Assiduidade {
 
 export default function FormModalAssiduidade() {
   const {accessToken, userId, userName } = useContext(AuthContext);
+  const router = useRouter();
   const [assiduidadeList, setAssiduidadeList] = useState<Assiduidade[]>([]);
   const [formData, setFormData] = useState({
     entrada: '',
@@ -23,17 +22,21 @@ export default function FormModalAssiduidade() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [armazenar, setArmazenar] = useState<string[]>([]);
 
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isRegisteringFace, setIsRegisteringFace] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-
+  useEffect(() => {
+      if (!accessToken) {
+        router.push('/logincomsenha') 
+      }
+    }, [accessToken, router])
   useEffect(() => {
     if (userId) fetchAssiduidade();
   }, [userId]);
-
   const fetchAssiduidade = async () => {
     const res = await fetch(`https://backend-django-2-7qpl.onrender.com/api/assiduidade/?funcionario=${userId}`,{
       headers:{
@@ -44,7 +47,7 @@ export default function FormModalAssiduidade() {
     console.log('teu ID', userId)
     setAssiduidadeList(data);
   };
-
+ 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -84,43 +87,71 @@ export default function FormModalAssiduidade() {
     setIsRegisteringFace(false);
     setError(null);
   };
-
-  const registerNewFace = async () => {
-    //if//(!//userName) return;
-    const accessToken = localStorage.getItem('access_token');
+   const armazenarImagem = () => {
     const imageData = captureImage();
-    console.log("accessToken usado:", accessToken);
-
-if (!imageData) {
-  setError('Falha ao capturar imagem');
-  return;
-}
-
-try {
-  const formData = new FormData();
-  const blob = await (await fetch(imageData)).blob(); // converte base64 para blob
-  formData.append("image", blob, "face.jpg");
-
-  const response = await fetch('https://8d3e-102-214-36-231.ngrok-free.app/api/register_face/', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-    },
-    body: formData,
-  });
-
-  const data = await response.json();
-  console.log(data)
-  if (response.ok) {
-    Swal.fire({ icon: 'success', title: `Rosto cadastrado para ${userName}` });
-    closeCamera();
-  } else {
-    Swal.fire({ icon: 'error', title: data.error || 'Erro no cadastro facial' });
+    if (imageData) {
+      setArmazenar(prev => [...prev, imageData]);
+      Swal.fire({ icon: 'success', title: 'Foto armazenada com sucesso!' });
+    } else {
+      setError('Falha ao capturar imagem');
+    }
   }
-} catch (err) {
-  console.error(err);
-}
-  };
+const registerNewFace = async () => {
+  const accessToken = localStorage.getItem('access_token');
+
+  if (!accessToken) {
+    Swal.fire({ icon: 'error', title: 'Token de acesso não encontrado' });
+    return;
+  }
+
+  if (!armazenar || armazenar.length === 0) {
+    Swal.fire({ icon: 'warning', title: 'Nenhuma imagem capturada' });
+    return;
+  }
+
+  try {
+    let erroOcorrido = false;
+
+    for (const imageData of armazenar) {
+      const formData = new FormData();
+      const blob = await (await fetch(imageData)).blob();
+      formData.append("image", blob, "face.jpg");
+
+      const response = await fetch('https://3b63-102-214-36-178.ngrok-free.app/api/register_face/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        erroOcorrido = true;
+        console.error("Erro ao cadastrar imagem:", data);
+        Swal.fire({
+          icon: 'error',
+          title: `Erro ao cadastrar uma das imagens`,
+          text: data.error || 'Erro desconhecido'
+        });
+        break;
+      }
+    }
+
+    if (!erroOcorrido) {
+      Swal.fire({
+        icon: 'success',
+        title: `${armazenar.length} imagem(ns) cadastrada(s) com sucesso!`,
+      });
+      closeCamera();
+    }
+
+  } catch (err) {
+    console.error("Erro geral:", err);
+    Swal.fire({ icon: 'error', title: 'Erro ao registrar rosto', text: String(err) });
+  }
+};
 
   useEffect(() => {
     return () => {
@@ -144,14 +175,18 @@ try {
           <div className="bg-white p-6 rounded w-96 space-y-4">
             <h2 className="text-xl font-semibold">Cadastrar Rosto de {userName}</h2>
             <video ref={videoRef} autoPlay playsInline className="w-full h-auto" />
-            <div className="flex space-x-2">
-              <button onClick={registerNewFace} className="flex-1 bg-green-600 text-white py-2 rounded">
-                Salvar Foto
-              </button>
-              <button onClick={closeCamera} className="flex-1 bg-gray-500 text-white py-2 rounded">
-                Cancelar
-              </button>
-            </div>
+            <div className="space-y-2">
+            <button onClick={armazenarImagem} className="w-full bg-blue-600 text-white py-2 rounded">
+            Capturar Foto
+          </button>
+          <button onClick={registerNewFace} className="w-full bg-green-600 text-white py-2 rounded">
+    Salvar {armazenar.length} Foto(s)
+        </button>
+  <button onClick={closeCamera} className="w-full bg-gray-500 text-white py-2 rounded">
+    Cancelar
+  </button>
+  {error && <p className="text-red-600">{error}</p>}
+</div>
             {error && <p className="text-red-600">{error}</p>}
           </div>
         </div>
