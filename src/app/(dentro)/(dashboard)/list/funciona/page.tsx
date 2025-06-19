@@ -1,6 +1,8 @@
 'use client'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useContext } from 'react'
 import Swal from "sweetalert2";
+import { AuthContext } from '@/app/context/AuthContext';
+import { useRouter } from 'next/navigation';
 interface TableData {
   columns: string[]
   rows: Record<string, any>[]
@@ -10,6 +12,8 @@ interface TableData {
 export default function DatabaseManager() {
   const [tables, setTables] = useState<string[]>([])
   const [selectedTable, setSelectedTable] = useState('')
+  const { accessToken } = useContext(AuthContext);
+  const router=useRouter()
   const [tableData, setTableData] = useState<TableData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -21,7 +25,11 @@ export default function DatabaseManager() {
   const [pageSize, setPageSize] = useState(10)
   const [searchTerm, setSearchTerm] = useState('')
   const [sortConfig, setSortConfig] = useState<{key: string; direction: 'asc' | 'desc'} | null>(null)
-
+useEffect(() => {
+        if (!accessToken) {
+          router.push('/logincomsenha') 
+        }
+      }, [accessToken, router])
   useEffect(() => {
     const fetchTables = async () => {
       try {
