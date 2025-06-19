@@ -206,7 +206,6 @@ useEffect(() => {
 }
 
 
-  // Ordenação das colunas
   const requestSort = (key: string) => {
     let direction: 'asc' | 'desc' = 'asc'
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
