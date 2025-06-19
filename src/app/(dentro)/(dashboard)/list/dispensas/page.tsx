@@ -1,13 +1,14 @@
 
 "use client"
 
-import React, { useState, useEffect, ChangeEvent, FormEvent } from "react"
+import React, { useState, useEffect, ChangeEvent, FormEvent, useContext } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import Swal from 'sweetalert2'
-
+import { AuthContext } from '@/app/context/AuthContext';
+import { useRouter } from "next/navigation"
 export type Leave = {
   id: number
   motivo: string
@@ -19,6 +20,7 @@ export type Leave = {
   created_at: string
   funcionario_nome?: string
 }
+
 function calculateDays(start: string, end: string): number {
   const startDate = new Date(start);
   const endDate = new Date(end);
@@ -36,8 +38,14 @@ export  default function AdminLeavesPage() {
   const [leaves, setLeaves] = useState<Leave[]>([])
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
+  const router=useRouter()
+ const {accessToken, userId, userName } = useContext(AuthContext);
   const [file, setFile] = useState<File | null>(null);
-
+  useEffect(() => {
+        if (!accessToken) {
+          router.push('/logincomsenha') 
+        }
+      }, [accessToken, router])
 
   useEffect(() => {
     fetch('https://backend-django-2-7qpl.onrender.com/api/leaves/all/')
@@ -74,7 +82,7 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     }
   }
 
-  if (loading) return <p>Carregando...</p>
+
 
   return (
     <><div className="block sm:hidden space-y-4">
@@ -90,7 +98,7 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
           <p><strong>Status:</strong> {l.status}</p>
           <p><strong>Comentário:</strong> {l.admin_comentario || '-'}</p>
           <p><strong>Justificativo:</strong>  {l.justificativo ? (
-                    <a  href={`https://3b63-102-214-36-178.ngrok-free.app/api/media/justificativo/${l.justificativo?.split('/').pop()}`} target="_blank" rel="noopener noreferrer">Ver PDF</a>
+                    <a href={l.justificativo} target="_blank">Ver PDF</a>
                   ) : "—"}</p>
           <p><strong>Ações:</strong> {l.status === "pendente" ? (
                     <>
@@ -133,7 +141,8 @@ const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
                 <TableCell>{l.admin_comentario || '—'}</TableCell>
                 <TableCell>
                   {l.justificativo ? (
-                     <a  href={`https://8d3e-102-214-36-231.ngrok-free.app/api/media/justificativo/${l.justificativo?.split('/').pop()}`} target="_blank" rel="noopener noreferrer">Ver PDF</a>
+                             <a  href={`https://8d3e-102-214-36-231.ngrok-free.app/api/media/justificativo/${l.justificativo?.split('/').pop()}`} target="_blank" rel="noopener noreferrer">Ver PDF</a>
+                    
                   ) : "—"}
                 </TableCell>
                 <TableCell className="flex gap-2">
