@@ -5,6 +5,7 @@ import Swal from "sweetalert2";
 import { AuthContext } from "@/app/context/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import {
   Table,
   TableHeader,
@@ -33,7 +34,7 @@ function formatDate(dateString: string) {
     : d.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
 }
 
-export default function EmployeeLeavesPage() {
+export default function DispensaFuncionario() {
   const { accessToken } = useContext(AuthContext);
   const [dispensa, setdispensa] = useState<Leave[]>([]);
   const [motivo, setmotivo] = useState("");
@@ -41,6 +42,7 @@ export default function EmployeeLeavesPage() {
   const [fim, setfim] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     if (!accessToken) return;
@@ -62,18 +64,29 @@ function calculateDays(start: string, end: string): number {
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; 
   return isNaN(diffDays) ? 0 : diffDays;
 }
+useEffect(() => {
+    if (!accessToken) {
+      router.push('/logincomsenha') 
+    }
+  }, [accessToken, router])
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!accessToken) return Swal.fire("Erro", "Faça login primeiro", "error");
-
+    const inicioDate = new Date(inicio);
+    const fimDate = new Date(fim);
+    if(inicioDate > fimDate) {
+      return Swal.fire("Erro", "A data de início não pode ser posterior à data de término", "error");
+    }
     const body = new FormData();
     body.append("motivo", motivo);
     body.append("inicio", inicio);
     body.append("fim", fim);
     if (file) {
-    Swal.fire({ title: 'Carregando PDF...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-    body.append("justificativo", file);
-    Swal.close();
+      body.append("justificativo", file);
+    }
+
+    if (file) {
+      Swal.fire({ title: 'Carregando PDF...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     }
     const res = await fetch("https://3b63-102-214-36-178.ngrok-free.app/api/dispensa/create/", {
       method: "POST",
@@ -83,12 +96,22 @@ function calculateDays(start: string, end: string): number {
 
     if (!res.ok) return Swal.fire("Erro", "Falha ao enviar pedido", "error");
     const json = await res.json();
+    console.log(json);
     setdispensa((prev) => [json, ...prev]);
     setmotivo(""); setinicio(""); setfim(""); setFile(null);
     Swal.fire("Sucesso", "Pedido enviado!", "success");
   };
-
-  if (loading) return <p>Carregando...</p>;
+useEffect(() => {
+    if (loading) {
+      Swal.fire({
+        title: 'Carregando Dispensas...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
+    } else {
+      Swal.close();
+    }
+  }, [loading]);
 
   return (
     <div className="p-6">
@@ -142,7 +165,7 @@ function calculateDays(start: string, end: string): number {
               <TableCell>{l.admin_comentario || "—"}</TableCell>
               <TableCell>
                 {l.justificativo ? (
-                  <a  href={`https://3d63-102-214-36-178.ngrok-free.app/api/media/justificativo/${l.justificativo?.split('/').pop()}`} target="_blank" rel="noopener noreferrer">Ver PDF</a>
+                  <a  href={`https://8d3e-102-214-36-231.ngrok-free.app/api/media/justificativo/${l.justificativo?.split('/').pop()}`} target="_blank" rel="noopener noreferrer">Ver PDF</a>
                 ) : "—"}
               </TableCell>
               <TableCell>{l.funcionario_nome}</TableCell>
