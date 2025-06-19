@@ -1,4 +1,6 @@
 'use client'
+import { useCallback } from 'react'
+
 import { useState, useEffect, useMemo, useContext } from 'react'
 import Swal from "sweetalert2";
 import { AuthContext } from '@/app/context/AuthContext';
@@ -50,7 +52,8 @@ useEffect(() => {
     fetchTables()
   }, [])
 
-  const fetchTableData = async () => {
+
+  const fetchTableData = useCallback(async () => {
     if (!selectedTable) return
 
     try {
@@ -76,11 +79,11 @@ useEffect(() => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedTable, currentPage, pageSize, searchTerm, sortConfig])
 
   useEffect(() => {
     fetchTableData()
-  }, [selectedTable, currentPage, pageSize, searchTerm, sortConfig])
+  }, [fetchTableData])
 
   const handleEditClick = (row: Record<string, any>) => {
     setEditingId(row.id)
