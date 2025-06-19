@@ -6,6 +6,7 @@ import autoTable from 'jspdf-autotable';
 import { FileText, LogIn, LogOut, UserPlus } from 'lucide-react';
 import { AuthContext } from '@/app/context/AuthContext';
 import Swal from "sweetalert2"
+import { useRouter } from 'next/navigation';
 interface Assiduidade {
   id: number;
   funcionario: number;
@@ -23,7 +24,7 @@ interface Funcionario {
 
 export default function FormModalAssiduidade() {
   const { accessToken } = useContext(AuthContext);
-
+  const router=useRouter()
   const [listaFuncionarios, definirListaFuncionarios] = useState<Funcionario[]>([]);
   const [listaAssiduidade, definirListaAssiduidade] = useState<Assiduidade[]>([]);
   const [dadosFormulario, definirDadosFormulario] = useState({ funcionario: '', entrada: '', data: '' });
@@ -39,7 +40,7 @@ export default function FormModalAssiduidade() {
   const [registrandoEntrada, definirRegistrandoEntrada] = useState(false);
   const [registrandoSaida, definirRegistrandoSaida] = useState(false);
   const [contagem, setContagem] = useState<number>(0);
-
+  const [loading, setLoading] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -52,14 +53,26 @@ export default function FormModalAssiduidade() {
     const resposta = await fetch('https://backend-django-2-7qpl.onrender.com/api/assiduidade/todos/');
     const dados = await resposta.json();
     definirListaAssiduidade(dados);
+    setLoading(false);
   };
-
+  useEffect(() => {
+      if (loading) {
+        Swal.fire({
+          title: 'Carregando As Assiduidades...',
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading()
+        });
+      } else {
+        Swal.close();
+      }
+    }, [loading]);
   const aoMudarInput = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     definirDadosFormulario(prev => ({ ...prev, [name]: value }));
   };
 
   const registrarEntrada = async (p0: { funcionario: any; entrada: string; data: string; }) => {
+    
     try{
       const  resposta = await fetch('https://backend-django-2-7qpl.onrender.com/api/assiduidade/', {
         method: 'POST',
@@ -160,6 +173,11 @@ export default function FormModalAssiduidade() {
     definirRegistrandoEntrada(false);
     definirRegistrandoSaida(false);
   };
+  useEffect(() => {
+      if (!accessToken) {
+        router.push('/logincomsenha') 
+      }
+    }, [accessToken, router])
   
 const reconhecerFace = async () => {
   const imagem = capturarImagem();
@@ -167,9 +185,9 @@ const reconhecerFace = async () => {
     definirErro('Falha ao capturar imagem');
     return;
   }
-
+  console.log('imagem capturada:');
   try {
-    definirCarregando(true);
+    
     const resposta = await fetch('https://3b63-102-214-36-178.ngrok-free.app/api/facial/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -177,7 +195,7 @@ const reconhecerFace = async () => {
     });
 
     const dados = await resposta.json();
-
+    console.log('dados recebidos:', dados);
     if (!resposta.ok || !dados.funcionario_id) {
       throw new Error(dados.error || 'Funcionário não reconhecido');
     }
@@ -187,16 +205,40 @@ const reconhecerFace = async () => {
     const dataAtual = agora.toISOString().split('T')[0];
 
     if (registrandoSaida) {
-      await registrarSaida(dados.funcionario_id, hora);
-    } else {
-      await registrarEntrada({ funcionario: dados.funcionario_id.toString(), entrada: hora, data: dataAtual });
-      Swal.fire('Sucesso', 'Entrada registrada com sucesso!', 'success');
-    }
+  const registroAberto = listaAssiduidade.find(
+    item => item.funcionario.toString() === dados.funcionario_id.toString()
+      && item.data === dataAtual
+      && item.saida === null
+  );
+  if (!registroAberto) {
+    Swal.fire('Erro', 'Não há entrada registrada hoje para esse funcionário.', 'warning');
+    return;
+  }
+
+  await registrarSaida(dados.funcionario_id, hora);
+  Swal.fire('Sucesso', 'Saída registrada com sucesso!', 'success');
+} else {
+  const entradaExistente = listaAssiduidade.find(
+    item => item.funcionario.toString() === dados.funcionario_id.toString()
+      && item.data === dataAtual
+  );
+  if (entradaExistente) {
+    Swal.fire('Erro', 'Este funcionário já tem entrada registrada hoje.', 'warning');
+    return;
+  }
+
+  await registrarEntrada({
+    funcionario: dados.funcionario_id.toString(),
+    entrada: hora,
+    data: dataAtual
+  });
+  Swal.fire('Sucesso', 'Entrada registrada com sucesso!', 'success');
+}
 
     await carregarAssiduidade();
     definirModalAberto(false);
     definirDadosFormulario({ funcionario: '', entrada: '', data: '' });
-
+    definirCarregando(true);
   } catch (err: any) {
     definirErro('Erro: ' + err.message);
     Swal.fire('Erro', err.message, 'error');
@@ -244,7 +286,7 @@ const reconhecerFace = async () => {
     definirRegistrandoSaida(true);
     await abrirCamera();
   };
-
+  
   useEffect(() => {
     return () => {
       if (streamRef.current) streamRef.current.getTracks().forEach(track => track.stop());
@@ -256,7 +298,7 @@ const reconhecerFace = async () => {
       <input type="time" value={hora} onChange={e=>setHora(e.target.value)} />
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Gestão de Assiduidade</h1>
-        <h1 className="text-2xl sm:text-3xl font-bold text-yellow-800">Os registro de assiduidades serão apagados depois de 20h e será gerado um relatório.</h1>
+        <h1 className="text-1xl sm:text-1xl font-bold text-yellow-800">Os registro de assiduidades serão apagados depois de 20h e será gerado um relatório.</h1>
 
         <button onClick={exportarPDF} className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300 min-h-[48px]">
           <FileText className="w-5 h-5" />
