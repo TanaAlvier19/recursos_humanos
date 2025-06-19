@@ -51,6 +51,7 @@ const FuncionarioDashboard = () => {
       router.push('/logincomsenha') 
     }
   }, [accessToken, router])
+  if (!accessToken) return null
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 space-y-8">
