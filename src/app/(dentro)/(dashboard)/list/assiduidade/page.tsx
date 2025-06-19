@@ -45,9 +45,10 @@ export default function FormModalAssiduidade() {
   const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
-
+  if (accessToken) {
     carregarAssiduidade();
-  }, []);
+  }
+}, [accessToken])
 
   const carregarAssiduidade = async () => {
     const resposta = await fetch('https://backend-django-2-7qpl.onrender.com/api/assiduidade/todos/');
