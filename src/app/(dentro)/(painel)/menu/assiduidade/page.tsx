@@ -27,6 +27,9 @@ export default function FormModalAssiduidade() {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isRegisteringFace, setIsRegisteringFace] = useState(false);
 
+  const [contando, setContando] = useState(false);
+  const [contagem, setContagem] = useState(0);
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   useEffect(() => {
@@ -64,7 +67,16 @@ export default function FormModalAssiduidade() {
       setError('Erro ao acessar a câmera: ' + (err as Error).message);
     }
   };
+ useEffect(() => {
+  let intervalo: ReturnType<typeof setInterval>;
 
+  if (contando) {
+    intervalo = setInterval(() => {
+      setContagem(prev => prev + 1);
+    }, 1000);
+  }
+  return () => clearInterval(intervalo);
+}, [contando]);
   const captureImage = (): string | null => {
     if (!videoRef.current) return null;
     const canvas = document.createElement('canvas');
@@ -179,13 +191,13 @@ const registerNewFace = async () => {
             <button onClick={armazenarImagem} className="w-full bg-blue-600 text-white py-2 rounded">
             Capturar Foto
           </button>
-          <button onClick={registerNewFace} className="w-full bg-green-600 text-white py-2 rounded">
+          <button onClick={() =>{ registerNewFace(); setContando(true);}} className="w-full bg-green-600 text-white py-2 rounded">
     Salvar {armazenar.length} Foto(s)
         </button>
   <button onClick={closeCamera} className="w-full bg-gray-500 text-white py-2 rounded">
     Cancelar
   </button>
-  {error && <p className="text-red-600">{error}</p>}
+  {contando && <p className="text-green-600 text-sm">{contagem} Processando as Imagesn...</p>}
 </div>
             {error && <p className="text-red-600">{error}</p>}
           </div>
