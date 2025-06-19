@@ -7,28 +7,61 @@ const AdminDashboard = () => {
   const { accessToken } = useContext(AuthContext);
     const router=useRouter()
   const [funcionarios, setFuncionarios] = useState([]);
-  const [ativos, setAtivos] = useState(0);
-  const [inativos, setInativos] = useState(0);
-  const [totalDispensas, setTotalDispensas] = useState(0);
-  const [totalFaltas, setTotalFaltas] = useState(0);
+  const [totalDispensas, setTotalDispensas] = useState([]);
   const [totalPresencas, setTotalPresencas] = useState(0);
-  const [departamentos, setDepartamentos] = useState([]);
+  const [departamentos, setDepartamentos] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [listaAssiduidade, definirListaAssiduidade] = useState([]);
 useEffect(() => {
     if (!accessToken) {
-      router.push('/login') // redireciona para a página de login
+      router.push('/logincomsenha') 
     }
   }, [accessToken, router])
  useEffect(() => {
-     fetch('https://backend-django-2-7qpl.onrender.com/api/leaves/all/')
-       .then(res => res.json())
-       .then(json => {
-         const dispensas = json.message || []
-         setTotalDispensas(dispensas.length)})
-       .catch(err => console.error(err))
-   }, [])
+  if (!accessToken) return;
+
+  const fetchData = async () => {
+    try {
+
+      const [resFuncionarios, resDispensas, resTables] = await Promise.all([
+        fetch('https://backend-django-2-7qpl.onrender.com/api/funcionarios/all/', {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }),
+        fetch('https://backend-django-2-7qpl.onrender.com/api/leaves/all/', {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }),
+        fetch('https://backend-django-2-7qpl.onrender.com/tables/'),
+      ]);
+
+      const funcionariosData = await resFuncionarios.json();
+      const dispensaJson = await resDispensas.json();
+      const tablesJson = await resTables.json();
+
+      if (!resTables.ok) throw new Error(tablesJson.error || 'Erro ao buscar tabelas');
+
+      setFuncionarios(funcionariosData);
+      setTotalDispensas(dispensaJson.message?.length || 0);
+      setDepartamentos(tablesJson.tables?.length || 0);
+      carregarAssiduidade();
+      console.log('Funcionários:', funcionariosData.length);
+      console.log('Dispensas:', dispensaJson.message?.length || 0);
+      console.log('Tabelas:', tablesJson.tables?.length || 0);
+    } catch (err) {
+      console.error('Erro ao buscar dados:', err);
+    }
+  };
+
+  fetchData();
+}, [accessToken]);
+
+const carregarAssiduidade = async () => {
+    const resposta = await fetch('https://backend-django-2-7qpl.onrender.com/api/assiduidade/todos/');
+    const dados = await resposta.json();
+    definirListaAssiduidade(dados);
+    setTotalPresencas(dados.length);
+    setLoading(false);
+  };
   if (!accessToken) return null
-  
-  
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 space-y-8">
@@ -37,9 +70,7 @@ useEffect(() => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {[
           { label: 'Cadastrados', value: funcionarios.length, color: 'blue' },
-          { label: 'Ativos', value: ativos, color: 'green' },
-          { label: 'Inativos', value: inativos, color: 'red' },
-          { label: 'Faltas', value: totalFaltas, color: 'rose' },
+          { label: 'Departamentos', value: departamentos, color: 'green' },
           { label: 'Presenças', value: totalPresencas, color: 'teal' },
           { label: 'Dispensas', value: totalDispensas, color: 'yellow' },
         ].map((item, idx) => (
