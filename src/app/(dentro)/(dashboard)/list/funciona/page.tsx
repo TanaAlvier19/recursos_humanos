@@ -1,8 +1,6 @@
 'use client'
-import { useState, useEffect, useMemo, useContext } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Swal from "sweetalert2";
-import { AuthContext } from '@/app/context/AuthContext';
-import { useRouter } from 'next/navigation';
 interface TableData {
   columns: string[]
   rows: Record<string, any>[]
@@ -12,8 +10,6 @@ interface TableData {
 export default function DatabaseManager() {
   const [tables, setTables] = useState<string[]>([])
   const [selectedTable, setSelectedTable] = useState('')
-  const { accessToken } = useContext(AuthContext);
-  const router=useRouter()
   const [tableData, setTableData] = useState<TableData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -25,11 +21,7 @@ export default function DatabaseManager() {
   const [pageSize, setPageSize] = useState(10)
   const [searchTerm, setSearchTerm] = useState('')
   const [sortConfig, setSortConfig] = useState<{key: string; direction: 'asc' | 'desc'} | null>(null)
-useEffect(() => {
-        if (!accessToken) {
-          router.push('/logincomsenha') 
-        }
-      }, [accessToken, router])
+
   useEffect(() => {
     const fetchTables = async () => {
       try {
@@ -144,6 +136,7 @@ useEffect(() => {
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Failed to delete record')
 
+      // Recarrega os dados
       await fetchTableData()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete record')
@@ -194,9 +187,11 @@ useEffect(() => {
     if(response.ok){
       Swal.fire('Cadastrado', 'sucess')
     }
+    if (!(nome1 && email1)) {
       await fetchTableData()
       setNewRecordForm({})
       setShowCreateForm(false)
+    }
 
   } catch (err) {
     setError(err instanceof Error ? err.message : 'Erro ao criar registro')
@@ -206,6 +201,7 @@ useEffect(() => {
 }
 
 
+  // Ordenação das colunas
   const requestSort = (key: string) => {
     let direction: 'asc' | 'desc' = 'asc'
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -218,8 +214,9 @@ useEffect(() => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-center text-blue-700 sm:text-4xl 
-      font-bold ">Gerenciador de Departamentos</h1>
+      <h1 className="text-center text-white text-4xl 
+      font-bold py-10 bg-gradient-to-r from-[#3ffc2f] to-[#2f83c3] 
+      bg-clip-text text-transparent ">Gerenciador de Departamentos</h1>
         
       <div className="mb-6 bg-white p-4 rounded-lg shadow">
         <div className="flex flex-wrap items-end gap-4">
@@ -295,6 +292,7 @@ useEffect(() => {
         </div>
       )}
 
+      {/* Formulário de Criação */}
       {showCreateForm && selectedTable && (
         <div className="bg-white p-4 rounded-lg shadow mb-6">
           <h2 className="text-xl font-semibold mb-4">Criar Novo Registro</h2>
