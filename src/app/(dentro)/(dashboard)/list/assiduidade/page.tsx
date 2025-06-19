@@ -56,17 +56,7 @@ export default function FormModalAssiduidade() {
     definirListaAssiduidade(dados);
     setLoading(false);
   };
-  useEffect(() => {
-      if (loading) {
-        Swal.fire({
-          title: 'Carregando As Assiduidades...',
-          allowOutsideClick: false,
-          didOpen: () => Swal.showLoading()
-        });
-      } else {
-        Swal.close();
-      }
-    }, [loading]);
+
   const aoMudarInput = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     definirDadosFormulario(prev => ({ ...prev, [name]: value }));
@@ -195,11 +185,18 @@ const reconhecerFace = async () => {
       body: JSON.stringify({ image: imagem }),
     });
 
-    const dados = await resposta.json();
-    console.log('dados recebidos:', dados);
-    if (!resposta.ok || !dados.funcionario_id) {
-      throw new Error(dados.error || 'Funcionário não reconhecido');
-    }
+    if (!resposta.ok) {
+    const erroData = await resposta.json().catch(() => ({}));
+  Swal.fire('Erro', erroData?.error || 'Funcionário não reconhecido', 'error');
+  return;
+}
+
+const dados = await resposta.json();
+
+if (!dados.funcionario_id) {
+  Swal.fire('Erro', 'Funcionário não identificado na imagem.', 'error');
+  return;
+}
 
     const agora = new Date();
     const hora = agora.toTimeString().slice(0, 5);
