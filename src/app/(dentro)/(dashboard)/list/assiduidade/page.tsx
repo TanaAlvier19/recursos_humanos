@@ -28,7 +28,7 @@ export default function FormModalAssiduidade() {
   const [listaFuncionarios, definirListaFuncionarios] = useState<Funcionario[]>([]);
   const [listaAssiduidade, definirListaAssiduidade] = useState<Assiduidade[]>([]);
   const [dadosFormulario, definirDadosFormulario] = useState({ funcionario: '', entrada: '', data: '' });
-
+  const [localizar, definirLocalizar] = useState<{ lat: number | null; long: number | null }>({ lat: null, long: null });
   const [carregando, definirCarregando] = useState(false);
   const [modalAberto, definirModalAberto] = useState(false);
   const [erro, definirErro] = useState<string | null>(null);
@@ -49,7 +49,19 @@ export default function FormModalAssiduidade() {
     carregarAssiduidade();
   }
 }, [accessToken])
-
+useEffect(() => {
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition((position) => {
+      definirLocalizar({
+        lat: position.coords.latitude,
+        long: position.coords.longitude
+      });
+    }, (error) => {
+      console.error('Erro ao obter localização:', error);
+    });
+  }
+}, []);
+console.log('Localização atual:', localizar);
   const carregarAssiduidade = async () => {
     const resposta = await fetch('https://backend-django-2-7qpl.onrender.com/api/assiduidade/todos/');
     const dados = await resposta.json();
@@ -293,7 +305,11 @@ if (!dados.funcionario_id) {
 
   return (
     <div className="mx-auto max-w-5xl p-6 space-y-6">
-      <input type="time" value={hora} onChange={e=>setHora(e.target.value)} />
+      <h1>
+        Localização: {localizar.lat !== null && localizar.long !== null
+          ? `Lat: ${localizar.lat}, Long: ${localizar.long}`
+          : 'Localização não disponível'}
+      </h1>
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Gestão de Assiduidade</h1>
         <h1 className="text-1xl sm:text-1xl font-bold text-yellow-800">Os registro de assiduidades serão apagados depois de 20h e será gerado um relatório.</h1>
