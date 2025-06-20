@@ -50,17 +50,26 @@ export default function FormModalAssiduidade() {
   }
 }, [accessToken])
 useEffect(() => {
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition((position) => {
-      definirLocalizar({
-        lat: position.coords.latitude,
-        long: position.coords.longitude
-      });
-    }, (error) => {
-      console.error('Erro ao obter localização:', error);
-    });
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        definirLocalizar({
+          lat: position.coords.latitude,
+          long: position.coords.longitude
+        });
+      },
+      (error) => {
+        console.error('Erro ao obter localização:', error);
+      },
+      {
+        enableHighAccuracy: true, 
+        timeout: 5000,            
+        maximumAge: 0             
+      }
+    );
   }
 }, []);
+
 console.log('Localização atual:', localizar);
   const carregarAssiduidade = async () => {
     const resposta = await fetch('https://backend-django-2-7qpl.onrender.com/api/assiduidade/todos/');
