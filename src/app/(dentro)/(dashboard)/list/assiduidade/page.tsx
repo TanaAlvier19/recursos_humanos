@@ -319,6 +319,7 @@ if (!dados.funcionario_id) {
           ? `Lat: ${localizar.lat}, Long: ${localizar.long}`
           : 'Localização não disponível'}
       </h1>
+      <a href={`https://www.google.com/maps?q=${localizar.lat},${localizar.long}`}>Ver A localização no mapa</a>
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Gestão de Assiduidade</h1>
         <h1 className="text-1xl sm:text-1xl font-bold text-yellow-800">Os registro de assiduidades serão apagados depois de 20h e será gerado um relatório.</h1>
