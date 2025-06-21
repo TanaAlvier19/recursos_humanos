@@ -12,17 +12,17 @@ export default function DashboardLayout({
   const [abrirMenu, setabrirMenu]=useState(false)
   return (
     <div className="h-screen flex">
-      
-      <div className="flex-col w-[20%] md:w-[8%] hidden md:flex lg:w-[14%] xl:w-[3%] ">
+
+      <div className="flex-col w-[20%] md:w-[8%] bg-blue-500 hidden md:flex lg:w-[14%] xl:w-[3%] ">
         <Menu />
       </div>
         {abrirMenu && (
-          <div className="inset-0 bg-white z-50 md:hidden w-[20%] shadow-lg p-4">
+          <div className="inset-0 bg-blue-500 z-50 md:hidden w-[20%] shadow-lg p-4">
             <Menu/>
           </div>
         )}
       <div className="flex-1 flex flex-col bg-gray-50 overflow-auto">
-        <Navbar clicadoMenu={() => setabrirMenu(!abrirMenu)} />
+        <Navbar clicadoMenuAction={() => setabrirMenu(!abrirMenu)} />
         
         <main className="flex-1 p-4 overflow-auto">
           {children}
