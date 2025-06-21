@@ -1,37 +1,37 @@
 import Image from "next/image";
 import Link from "next/link";
-
+import { HouseIcon, CalendarCheck, Users,ListChecks, LibraryBig, ChartBarBig ,Info, Settings, LogOut} from "lucide-react";
 const menuItems = [
   {
     title: "MENU",
     items: [
       {
-        icon: "/home.png",
+        icon: <HouseIcon />,
         label: "Home",
         href: "/admin",
       },
       {
-        icon: "/student.png",
+        icon: <Users />,
         label: "Funcionário",
         href: "/list/funciona",
       },
       {
-        icon: "/lesson.png",
+        icon: <CalendarCheck />,
         label: "Dispensas",
         href: "/list/dispensas",
       },
       {
-        icon: "/attendance.png",
+        icon: <ListChecks/>,
         label: "Assiduidade",
         href: "/list/assiduidade",
       },
       {
-        icon: "/treinamento.png",
+        icon: <LibraryBig />,
         label: "Formações",
-        href: "/list/get_courses",
+        href: "/list/Formacoes",
       },
       {
-        icon: "/diagrama.png",
+        icon: <ChartBarBig />,
         label: "Perfomance",
         href: "/list/Perfomance",
       },
@@ -41,17 +41,17 @@ const menuItems = [
     title: "OUTROS",
     items: [
       {
-        icon: "/suporte-tecnico.png",
+        icon: <Info />,
         label: "Suporte",
         href: "/Suporte",
       },
       {
-        icon: "/setting.png",
+        icon: <Settings />,
         label: "Definições",
         href: "/Definições",
       },
       {
-        icon: "/logout.png",
+        icon: <LogOut/>,
         label: "Sair",
         href: "/Sair",
       },
@@ -63,19 +63,19 @@ const Menu = () => {
   return (
     <div className="mt-4 text-sm">
       {menuItems.map((i) => (
-        <div className="flex flex-col gap-2" key={i.title}>
-          <span className="hidden lg:block text-gray-400 font-light my-4">
-            {i.title}
-          </span>
+        <div className="flex flex-col gap-2 py-4" key={i.title}>
           {i.items.map((item) => {
-            
-              return (
-                <Link
+            return (
+              <Link
                   href={item.href}
                   key={item.label}
-                  className="flex items-center justify-center lg:justify-start gap-4 text-gray-500 py-2 md:px-2 rounded-md hover:bg-lamaSkyLight"
+                  className="flex items-center justify-center lg:justify-start gap-4 text-white py-2 md:px-2 rounded-md hover:bg-lamaSkyLight transition-colors duration-200 hover:text-blue-400"
                 >
-                  <Image src={item.icon} alt="" width={20} height={20} />
+                  {typeof item.icon === "string" ? (
+                    <Image src={item.icon} alt="" width={25} height={25} />
+                  ) : (
+                    item.icon
+                  )}
                   <span className="hidden lg:block">{item.label}</span>
                 </Link>
               );
